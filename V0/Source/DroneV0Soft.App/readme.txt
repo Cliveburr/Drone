@@ -1,0 +1,14 @@
+﻿
+
+MOSFT / IGBT
+
+2N6071A
+
+IRF630A  - Mosfet N-channel  VGS(th) = 2 a 4v
+
+IRG B6B60KD
+
+25TTS12
+
+S7805PI
+

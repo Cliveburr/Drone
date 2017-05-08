@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "01 - App", "01 - App", "{B9D03AC3-6283-4625-99BC-C17894B6BBE6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DroneV0Soft.App", "..\DroneV0Soft.App\DroneV0Soft.App.csproj", "{9CA42678-5131-4770-BB9A-6B3C861058B8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02 - Usb Hid Library", "02 - Usb Hid Library", "{D348165F-079A-439A-9E34-518F7B627DDB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsbHidLibrary", "..\..\..\..\AutoHome\Communication\USB\Library\UsbHidLibrary\UsbHidLibrary.csproj", "{733B8D65-3BAF-4608-AE81-2CE14CA06805}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "03 - NativeNET", "03 - NativeNET", "{20132960-66DE-4D4D-8137-F2449652C373}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NativeNET", "..\..\..\..\NativeNET\NativeNET\NativeNET.csproj", "{435AC815-9D77-4F2B-A751-10393E05DE89}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9CA42678-5131-4770-BB9A-6B3C861058B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CA42678-5131-4770-BB9A-6B3C861058B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CA42678-5131-4770-BB9A-6B3C861058B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CA42678-5131-4770-BB9A-6B3C861058B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{733B8D65-3BAF-4608-AE81-2CE14CA06805}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{733B8D65-3BAF-4608-AE81-2CE14CA06805}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{733B8D65-3BAF-4608-AE81-2CE14CA06805}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{733B8D65-3BAF-4608-AE81-2CE14CA06805}.Release|Any CPU.Build.0 = Release|Any CPU
+		{435AC815-9D77-4F2B-A751-10393E05DE89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{435AC815-9D77-4F2B-A751-10393E05DE89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{435AC815-9D77-4F2B-A751-10393E05DE89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{435AC815-9D77-4F2B-A751-10393E05DE89}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9CA42678-5131-4770-BB9A-6B3C861058B8} = {B9D03AC3-6283-4625-99BC-C17894B6BBE6}
+		{733B8D65-3BAF-4608-AE81-2CE14CA06805} = {D348165F-079A-439A-9E34-518F7B627DDB}
+		{435AC815-9D77-4F2B-A751-10393E05DE89} = {20132960-66DE-4D4D-8137-F2449652C373}
+	EndGlobalSection
+EndGlobal

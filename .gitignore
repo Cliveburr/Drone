@@ -1,0 +1,19 @@
+# Firmeware
+**\build
+**\dist
+**\debug
+
+# Isis files
+*.pwi
+*.dbk
+*.sdf
+
+# Visual Studio and Windows bin files
+*.suo
+*.user
+_ReSharper.*
+**\bin
+**\obj
+**\packages
+*.vs
+
