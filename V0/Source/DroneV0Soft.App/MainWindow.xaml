@@ -5,10 +5,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DroneV0Soft.App"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="570.188" Width="1102.187">
     <Grid>
-        <Button x:Name="button" Content="Button" HorizontalAlignment="Left" Margin="57,157,0,0" VerticalAlignment="Top" Width="75" Click="button_Click"/>
-        <Label x:Name="label" Content="Label" HorizontalAlignment="Left" Margin="43,76,0,0" VerticalAlignment="Top"/>
-
+        <TabControl x:Name="tabControl" Margin="3,3,3,3" >
+            <TabItem Header="basic">
+                <Grid Background="#FFE5E5E5">
+                    <Button x:Name="button" Content="Button" HorizontalAlignment="Left" Margin="57,157,0,0" VerticalAlignment="Top" Width="75" Click="button_Click"/>
+                    <Label x:Name="label" Content="Label" HorizontalAlignment="Left" Margin="43,76,0,0" VerticalAlignment="Top"/>
+                    <Button Content="Probe" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="372,76,0,0" Click="Probe_Click"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Probe">
+                <Grid Background="#FFE5E5E5">
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

@@ -1,0 +1,73 @@
+﻿<Window x:Class="DroneV0Soft.App.ProbeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DroneV0Soft.App"
+        mc:Ignorable="d"
+        Title="ProbeWindow" Height="570.188" Width="1102.187" Closed="Window_Closed" Loaded="Window_Loaded" SizeChanged="Window_SizeChanged">
+    <Grid>
+        <DockPanel>
+            <GroupBox Margin="3,3,3,3"  Header="Configuration" DockPanel.Dock="Top">
+                <Grid>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <ToggleButton Margin="3,3,3,3" Content="Active" Width="75" IsChecked="{Binding Path=Active}" Click="Active_Click" />
+                            <Button Margin="3,3,3,3" Content="Add View" Width="75" Click="AddView_Click" />
+                            <CheckBox Margin="3,3,3,3" Content="Channel A" IsChecked="{Binding Path=ChannelA}" Tag="A" Checked="ChannelSelect_Change" Unchecked="ChannelSelect_Change" />
+                            <CheckBox Margin="3,3,3,3" Content="Channel B" IsChecked="{Binding Path=ChannelB}" Tag="B" Checked="ChannelSelect_Change" Unchecked="ChannelSelect_Change" />
+                            <CheckBox Margin="3,3,3,3" Content="Channel C" IsChecked="{Binding Path=ChannelC}" Tag="C" Checked="ChannelSelect_Change" Unchecked="ChannelSelect_Change" />
+                            <CheckBox Margin="3,3,3,3" Content="Channel D" IsChecked="{Binding Path=ChannelD}" Tag="D" Checked="ChannelSelect_Change" Unchecked="ChannelSelect_Change" />
+                            <CheckBox Margin="3,3,3,3" Content="Channel E" IsChecked="{Binding Path=ChannelE}" Tag="E" Checked="ChannelSelect_Change" Unchecked="ChannelSelect_Change" />
+                            <CheckBox Margin="3,3,3,3" Content="Channel F" IsChecked="{Binding Path=ChannelF}" Tag="F" Checked="ChannelSelect_Change" Unchecked="ChannelSelect_Change" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Margin="3,3,3,3" Content="View Field (Miliseconds):" />
+                            <TextBox Margin="3,3,3,3" Width="100" Text="{Binding Path=ViewField, UpdateSourceTrigger=PropertyChanged}" KeyDown="ViewField_KeyDown"></TextBox>
+                            <Label Margin="3,3,3,3" Content="X Grid:" />
+                            <TextBox Margin="3,3,3,3" Width="100" Text="{Binding Path=XGrid, UpdateSourceTrigger=PropertyChanged}" KeyDown="XGrid_KeyDown"></TextBox>
+                            <Label Margin="3,3,3,3" Content="Acquisition Timer:" />
+                            <TextBox Margin="3,3,3,3" Width="100" Text="{Binding Path=AcquistionTimer, UpdateSourceTrigger=PropertyChanged}" KeyDown="AcquistionTimer_KeyDown"></TextBox>
+                            <ToggleButton Margin="3,3,3,3" Content="One Shot" Width="75" IsChecked="{Binding Path=OneShot}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Margin="3,3,3,3" Content="Max Value:" />
+                            <TextBox Margin="3,3,3,3" Width="100" Text="{Binding Path=MaxValue, UpdateSourceTrigger=PropertyChanged}" KeyDown="MaxValue_KeyDown"></TextBox>
+                            <Label Margin="3,3,3,3" Content="Y Grid:" />
+                            <TextBox Margin="3,3,3,3" Width="100" Text="{Binding Path=YGrid, UpdateSourceTrigger=PropertyChanged}" KeyDown="YGrid_KeyDown"></TextBox>
+                            <Label Margin="3,3,3,3" Content="Mouse Position:" />
+                            <Label Margin="3,3,3,3" Content="{Binding Path=MousePosition}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </GroupBox>
+            <ItemsControl x:Name="itemsControl" ItemsSource="{Binding Path=Views}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="1"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <GroupBox Margin="5,5,5,5" Header="View" DockPanel.Dock="Top">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Left">
+                                    <Button Margin="3,3,3,3" Content="Remove" Tag="{Binding}" Click="RemoveView_Click" />
+                                    <CheckBox Margin="3,3,3,3" Content="Channel A" IsChecked="{Binding Path=ChannelA}" IsEnabled="{Binding Path=EnableChannelA}" Name="A" Tag="{Binding}" Checked="ViewChannelSelect_Change" Unchecked="ViewChannelSelect_Change" />
+                                    <CheckBox Margin="3,3,3,3" Content="Channel B" IsChecked="{Binding Path=ChannelB}" IsEnabled="{Binding Path=EnableChannelB}" Name="B" Tag="{Binding}" Checked="ViewChannelSelect_Change" Unchecked="ViewChannelSelect_Change" />
+                                    <CheckBox Margin="3,3,3,3" Content="Channel C" IsChecked="{Binding Path=ChannelC}" IsEnabled="{Binding Path=EnableChannelC}" Name="C" Tag="{Binding}" Checked="ViewChannelSelect_Change" Unchecked="ViewChannelSelect_Change" />
+                                    <CheckBox Margin="3,3,3,3" Content="Channel D" IsChecked="{Binding Path=ChannelD}" IsEnabled="{Binding Path=EnableChannelD}" Name="D" Tag="{Binding}" Checked="ViewChannelSelect_Change" Unchecked="ViewChannelSelect_Change" />
+                                    <CheckBox Margin="3,3,3,3" Content="Channel E" IsChecked="{Binding Path=ChannelE}" IsEnabled="{Binding Path=EnableChannelE}" Name="E" Tag="{Binding}" Checked="ViewChannelSelect_Change" Unchecked="ViewChannelSelect_Change" />
+                                    <CheckBox Margin="3,3,3,3" Content="Channel F" IsChecked="{Binding Path=ChannelF}" IsEnabled="{Binding Path=EnableChannelF}" Name="F" Tag="{Binding}" Checked="ViewChannelSelect_Change" Unchecked="ViewChannelSelect_Change" />
+                                </StackPanel>
+                                <Grid Margin="3,3,3,3" Name="MyGrid" Tag="{Binding}" Background="Transparent" MouseMove="MyGrid_MouseMove" MouseLeave="MyGrid_MouseLeave" PreviewMouseMove="MyGrid_MouseMove">
+                                    <Border BorderBrush="Gray" BorderThickness="1" />
+                                </Grid>
+                            </DockPanel>
+                        </GroupBox>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </DockPanel>
+    </Grid>
+</Window>

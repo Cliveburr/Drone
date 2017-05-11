@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml.Serialization;
 
 namespace DroneV0Soft.App
 {
@@ -24,17 +25,29 @@ namespace DroneV0Soft.App
         private Device _device;
         private Timer _timer;
 
+        private ProbeWindow _probeWindow;
+
         public MainWindow()
         {
             InitializeComponent();
 
-            _device = new Device();
-            _device.OnMessageReceive += _device_OnMessageReceive;
+            //_device = new Device();
+            //_device.OnMessageReceive += _device_OnMessageReceive;
 
-            _timer = new Timer();
-            _timer.Elapsed += _timer_Elapsed;
-            _timer.Interval = 100;
-            _timer.Start();
+            //_timer = new Timer();
+            //_timer.Elapsed += _timer_Elapsed;
+            //_timer.Interval = 100;
+            //_timer.Start();
+
+
+            //_probe = new ProbeProps
+            //{
+            //    ViewField = 10000
+            //};
+            //_probe.ChannelA = ProbeInitializeChannel(groupBox);
+
+            //itemsControl.ItemsSource = new List<string> { "testando", "alog" }
+           //     .Select(p => new { Value = p });
         }
 
         private void _device_OnMessageReceive(byte[] msg)
@@ -97,6 +110,27 @@ namespace DroneV0Soft.App
             {
             }
             _timer.Start();
+        }
+
+        private void Probe_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_probeWindow == null)
+                {
+                    _probeWindow = new ProbeWindow();
+                    _probeWindow.Closed += (object sender2, EventArgs e2) => { _probeWindow = null; };
+                    _probeWindow.Show();
+                }
+                else
+                {
+                    _probeWindow.Activate();
+                }
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show(err.ToString());
+            }
         }
     }
 }
