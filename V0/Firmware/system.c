@@ -5,6 +5,8 @@
 
 //#include <p18f4550.h>
 
+#include "BLDC_Esc.h"
+
 // CONFIG1L
 #pragma config PLLDIV = 5       // PLL Prescaler Selection bits (No prescale (4 MHz oscillator input drives PLL directly))
 #pragma config CPUDIV = OSC2_PLL3// System Clock Postscaler Selection bits ([Primary Oscillator Src: /1][96 MHz PLL Src: /2])
@@ -67,6 +69,8 @@
 // CONFIG7H
 #pragma config EBTRB = OFF      // Boot Block Table Read Protection bit (Boot block (000000-0007FFh) is not protected from table reads executed in other blocks)
 
+struct TimerEventStruct test1;
+void test1_cb();
 
 void SYSTEM_Initialize()
 {
@@ -86,7 +90,7 @@ void SYSTEM_Initialize()
 
     // bit 0    - A/D On bit
     // bit 1    - Go/Done 1 = progress 0 = idle
-    // bit 2-5  -  Analog Channel Select bits   (0000 = AN0)
+    // bit 2-5  - Analog Channel Select bits   (0000 = AN0)
     // bit 6-7  - Unimplemented
     ADCON0 = 0b00000001;
     
@@ -103,9 +107,149 @@ void SYSTEM_Initialize()
     PORTB = 0b0000000;
     PORTC = 0b0000000;
     PORTD = 0b0000000;
+    
+    // bit 0-2   - Prescaler Select bits (111 = 1:256, 110 = 1:128, 101 = 1:64, 100 = 1:32, 011 = 1:16, 010 = 1:8, 001 = 1:4, 000 = 1:2)
+    // bit 3     - Prescaler Assignment bit (1 = TImer0 prescaler is NOT assigned, 0 = Timer0 prescaler is assigned)
+    // bit 4     - Source Edge Select bit (1 = Increment on high-to-low, 0 = Increment on low-to-high)
+    // bit 5     - Clock Source Select bit (1 = Transition on T0CKI pin, 0 = Internal instruction cycle clock)
+    // bit 6     - Timer0 8-Bit/16-Bit Control bit (1 = Timer0 is configured as an 8-bit, 0 = Timer0 is configured as a 16-bit)
+    // bit 7     - Timer0 On/Off Control bit (1 = Enabled, 0 = Disabled)
+    T0CON = 0b10000110;
+    
+    //test1.Value = 46875;
+    test1.Missing = test1.Value = 46904;
+    test1.Callback = test1_cb;
 }
 
-void SYSTEM_Task()
-{
-    //LedControl_Tick();
+// 65,535
+// 48Mhz = 48.000.000hz / 4 = 12.000.000hz = 83,33ns
+// Preescale 256 * 83,33ns = 21.332,48ns = 21,33us
+// Preescale 128 * 83,33ns = 10.666,24ns = 10,66us
+// Timer0 8-bit = 256 * 21,33us = 35.460,48us = 35,46ms
+// Timer0 16-bit - Preescale 128 - Maximum idle time = 65535 * 10,66us = 698.603,10us = 698,60ms
+
+// 1 segundo = 46882
+// 1s = 1.000.000us / 10,66us = 46904
+
+char step = 0;
+char c0 = 0;
+char c1 = 0;
+
+//unsigned short v1seg = 46875; // 46882;
+//unsigned short v1segmiss = 46875; // 46882; 
+
+//char ZeroCrossDetect()
+//{
+//    c0++;
+//    if (c0 == 255) {
+//        c1++;
+//        if (c1 == 255)
+//            return 1;
+//    }
+//    return 0;
+//}
+
+void SYSTEM_Task() {
+    
+    TimerEvent_Tick();
+    
+    TimerEvent_Check(&test1);
+    
+    //unsigned short vdiff = 0;
+    //unsigned short vnow = TMR0L ;
+    //TimerActualValue = TMR0L;
+    //TimerActualValue = (TMR0H << 8) | TimerActualValue;
+    
+    //if (TimerActualValue >= TimerLastValue) {
+    //    TimerDiffValue = TimerActualValue - TimerLastValue;
+    //}
+    //else {
+    //    TimerDiffValue = (0xFFFF - TimerLastValue) + TimerActualValue;
+    //}
+    //TimerLastValue = TimerActualValue;
+ 
+    //if ((test1.Missing - TimerDiffValue) > 0) {
+    //    test1.Missing -= TimerDiffValue;
+    //}
+    //else {
+    //    test1.Missing = test1.Value;
+    //    test1.Callback();
+    //}
+    
+    //if ((v1segmiss - TimerDiffValue) > 0) {
+    //    v1segmiss -= TimerDiffValue;
+    //    return;
+    //}
+    //else {
+    //    v1segmiss = v1seg;
+    //}
+    
+    //if (!ZeroCrossDetect())
+    //        return;
+   
+    //test1_cb();
+}
+
+void test1_cb() {
+    USBSTATE ^= 1;
+    
+    step++;
+    
+    switch(step) {
+        case 1:
+        {
+            //PORTD = 0b00100100;
+            
+            PHASECH = 0;
+            PHASEAH = 1;
+            //*PHASEBL = 1;
+            break;
+        }
+        case 2:
+        {
+            //PORTD = 0b00011000;
+            
+            PHASEBL = 0;
+            //*PHASEAH = 1;
+            PHASECL = 1;
+            break;
+        }
+        case 3:
+        {
+            //PORTD = 0b10010000;
+            
+            PHASEAH = 0;
+            PHASEBH = 1;
+            //*PHASECL = 1;
+            break;
+        }
+        case 4:
+        {
+            //PORTD = 0b01100000;
+            
+            PHASECL = 0;
+            //*PHASEBH = 1;
+            PHASEAL = 1;
+            break;
+        }
+        case 5:
+        {
+            //PORTD = 0b01001000;
+            
+            PHASEBH = 0;
+            PHASECH = 1;
+            //*PHASEAL = 1;
+            break;
+        }
+        case 6:
+        {
+            //PORTD = 0b10000100;
+            
+            PHASEAL = 0;
+            //*PHASECH = 1;
+            PHASEBL = 1;
+            step = 0;
+            break;
+        }
+    }
 }

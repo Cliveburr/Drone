@@ -53,19 +53,19 @@ void APP_DeviceTasks()
             }
             case 10:   // Change the LedControl channel 0
             {
-                RED0on = ReceivedDataBuffer[1];
-                RED0on = ReceivedDataBuffer[2] << 8;
-                RED0off = ReceivedDataBuffer[3];
-                RED0off = ReceivedDataBuffer[4] << 8;
-                GREEN0on = ReceivedDataBuffer[5];
-                GREEN0on = ReceivedDataBuffer[6] << 8;
-                GREEN0off = ReceivedDataBuffer[7];
-                GREEN0off = ReceivedDataBuffer[8] << 8;
-                BLUE0on = ReceivedDataBuffer[9];
-                BLUE0on = ReceivedDataBuffer[10] << 8;
-                BLUE0off = ReceivedDataBuffer[11];
-                BLUE0off = ReceivedDataBuffer[12] << 8;
-                LedControl_Init();
+                //RED0on = ReceivedDataBuffer[1];
+                //RED0on = ReceivedDataBuffer[2] << 8;
+                //RED0off = ReceivedDataBuffer[3];
+                //RED0off = ReceivedDataBuffer[4] << 8;
+                //GREEN0on = ReceivedDataBuffer[5];
+                //GREEN0on = ReceivedDataBuffer[6] << 8;
+                //GREEN0off = ReceivedDataBuffer[7];
+                //GREEN0off = ReceivedDataBuffer[8] << 8;
+                //BLUE0on = ReceivedDataBuffer[9];
+                //BLUE0on = ReceivedDataBuffer[10] << 8;
+                //BLUE0off = ReceivedDataBuffer[11];
+                //BLUE0off = ReceivedDataBuffer[12] << 8;
+                //LedControl_Init();
                 break;
             }
             //case COMMAND_TOGGLE_LED:  //Toggle LEDs command

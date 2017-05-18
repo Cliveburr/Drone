@@ -4,6 +4,10 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <logicalFolder name="f4" displayName="BLDC_Esc" projectFiles="true">
+        <itemPath>BLDC_Esc/BLDC_Esc.h</itemPath>
+        <itemPath>BLDC_Esc/BLDC_Esc_User.h</itemPath>
+      </logicalFolder>
       <logicalFolder name="f3" displayName="LEDRgb" projectFiles="true">
         <itemPath>LEDRgb/LedControl.h</itemPath>
         <itemPath>LEDRgb/LedControl_Config.h</itemPath>
@@ -33,6 +37,9 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <logicalFolder name="f4" displayName="BLDC_Esc" projectFiles="true">
+        <itemPath>BLDC_Esc/BLDC_Esc.c</itemPath>
+      </logicalFolder>
       <logicalFolder name="f3" displayName="LEDRgb" projectFiles="true">
         <itemPath>LEDRgb/LedControl.c</itemPath>
       </logicalFolder>
@@ -95,7 +102,7 @@
         <property key="asmlist" value="true"/>
         <property key="define-macros" value=""/>
         <property key="extra-include-directories"
-                  value="USB_Framework;.\;USB_Config;LEDRgb"/>
+                  value="USB_Framework;.\;USB_Config;BLDC_Esc"/>
         <property key="identifier-length" value="255"/>
         <property key="operation-mode" value="free"/>
         <property key="opt-xc8-compiler-strict_ansi" value="false"/>
