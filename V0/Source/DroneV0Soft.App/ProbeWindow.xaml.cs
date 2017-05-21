@@ -26,9 +26,12 @@ namespace DroneV0Soft.App
         private ProbeChannel[] _channels;
         private DateTime _viewStart;
         private Random rnd = new Random();
+        private Device _device;
 
-        public ProbeWindow()
+        public ProbeWindow(Device device)
         {
+            _device = device;
+
             InitializeComponent();
 
             _channels = new ProbeChannel[6];
@@ -125,40 +128,55 @@ namespace DroneV0Soft.App
             }
         }
 
-        private void _activeTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private const double adc = 0.0048828125;   // 5 / 1023
+
+        private async void _activeTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             _activeTimer.Stop();
+
+            var now = DateTime.Now;
+
+            var msg = new byte[] { 2 };
+            var read = await _device.WriteAndRead(msg);
+
+            var c0value = (read[1] << 8) | (read[0]);
+            //var c0volt = c0value * adc;
+            var c0point = new ProbePoint(now, (uint)c0value);
+
             Dispatcher.Invoke(() =>
             {
                 var context = DataContext as ProbeContext;
 
-                var now = DateTime.Now;
+                ProbeAddPointOnChannel(_channels[0], c0point);
 
-                Console.WriteLine("hit" + DateTime.Now.ToString());
-                for (var i = 0; i < 6; i++)
+                if (false)  // simulation
                 {
-                    if (_channels[i] != null)
+                    Console.WriteLine("hit" + DateTime.Now.ToString());
+                    for (var i = 0; i < 6; i++)
                     {
-                        var value = rnd.Next(-30, 30);
-
-                        if (_channels[i].Values.Count > 0)
+                        if (_channels[i] != null)
                         {
-                            value = ((int)_channels[i].Values.Last().Value) + value;
-                        }
+                            var value = rnd.Next(-30, 30);
 
-                        if (value < 0)
-                            value = 0;
+                            if (_channels[i].Values.Count > 0)
+                            {
+                                value = ((int)_channels[i].Values.Last().Value) + value;
+                            }
 
-                        if (value > context.MaxValue)
-                            value = (int)context.MaxValue;
+                            if (value < 0)
+                                value = 0;
 
-                        var point = new ProbePoint(now, (uint)value);
+                            if (value > context.MaxValue)
+                                value = (int)context.MaxValue;
 
-                        _channels[i].Values.Add(point);
+                            var point = new ProbePoint(now, (uint)value);
 
-                        if (_channels[i].View != null)
-                        {
-                            ProbeAddPointOnChannel(_channels[i], point);
+                            _channels[i].Values.Add(point);
+
+                            if (_channels[i].View != null)
+                            {
+                                ProbeAddPointOnChannel(_channels[i], point);
+                            }
                         }
                     }
                 }

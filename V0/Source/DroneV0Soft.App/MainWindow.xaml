@@ -10,9 +10,30 @@
         <TabControl x:Name="tabControl" Margin="3,3,3,3" >
             <TabItem Header="basic">
                 <Grid Background="#FFE5E5E5">
-                    <Button x:Name="button" Content="Button" HorizontalAlignment="Left" Margin="57,157,0,0" VerticalAlignment="Top" Width="75" Click="button_Click"/>
-                    <Label x:Name="label" Content="Label" HorizontalAlignment="Left" Margin="43,76,0,0" VerticalAlignment="Top"/>
-                    <Button Content="Probe" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="372,76,0,0" Click="Probe_Click"/>
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                            <Button Margin="3,3,3,3" Content="Probe" Width="75" Click="Probe_Click"/>
+                        </StackPanel>
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                            <Button x:Name="button" Margin="3,3,3,3" Content="Switch Power" Width="75" Click="button_Click"/>
+                            <Label x:Name="label" Margin="3,3,3,3" Content="Label" />
+                        </StackPanel>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <ToggleButton x:Name="CClockTb" Margin="3,3,3,3" Content="Counter-Clockwise" Checked="CClockTb_Checked_Unchecked" Unchecked="CClockTb_Checked_Unchecked"></ToggleButton>
+                                <Label Content="PWM Width (Hz):" />
+                                <TextBox x:Name="PWMWidthTb" Margin="3,3,3,3" Width="100" Text="10000" KeyDown="PWMWidthTb_KeyDown"></TextBox>
+                                <Label Content="Steps:" />
+                                <TextBox x:Name="StepsTb" Margin="3,3,3,3" Width="100" Text="18"></TextBox>
+                            </StackPanel>
+                            <Label x:Name="RPM_Label" Margin="3,3,3,3" Content="RPM: 10" />
+                            <Slider x:Name="RPM_Slider" Margin="3,3,3,3" Delay="500" Maximum="1000" Minimum="1" Value="10" ValueChanged="RPM_Slider_ValueChanged" />
+                            <Label x:Name="PWM_Label" Margin="3,3,3,3" Content="PWM: 600" />
+                            <Slider x:Name="PWM_Slider" Margin="3,3,3,3" Delay="500" Maximum="1200" Minimum="0" Value="600" ValueChanged="PWM_Slider_ValueChanged"/>
+                            <Label x:Name="RPM_Display" Margin="3,3,3,3" Content="RPM:" />
+                            <Label x:Name="PWM_Display" Margin="3,3,3,3" Content="PWM:" />
+                        </StackPanel>
+                    </DockPanel>
                 </Grid>
             </TabItem>
             <TabItem Header="Probe">

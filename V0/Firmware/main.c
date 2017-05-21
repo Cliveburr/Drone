@@ -18,6 +18,12 @@ void main(void) {
     USBDeviceInit();
     //LedControl_Init();
 
+    //while(1)
+    //{
+    //    USBSTATE ^= 1;
+    //    t_delay_10ms(100);
+    //}
+    
     while(1)
     {
         if (USBGETSIGNAL)

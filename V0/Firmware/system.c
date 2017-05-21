@@ -69,8 +69,9 @@
 // CONFIG7H
 #pragma config EBTRB = OFF      // Boot Block Table Read Protection bit (Boot block (000000-0007FFh) is not protected from table reads executed in other blocks)
 
-struct TimerEventStruct test1;
+struct TimerEventStruct Channel0PWM;
 void test1_cb();
+void Channel0PWM_cb();
 
 void SYSTEM_Initialize()
 {
@@ -114,40 +115,37 @@ void SYSTEM_Initialize()
     // bit 5     - Clock Source Select bit (1 = Transition on T0CKI pin, 0 = Internal instruction cycle clock)
     // bit 6     - Timer0 8-Bit/16-Bit Control bit (1 = Timer0 is configured as an 8-bit, 0 = Timer0 is configured as a 16-bit)
     // bit 7     - Timer0 On/Off Control bit (1 = Enabled, 0 = Disabled)
-    T0CON = 0b10000110;
+    T0CON = 0b10001011;
     
     //test1.Value = 46875;
-    test1.Missing = test1.Value = 46904;
+    test1.Missing = test1.Value = 6000004; //144000;
     test1.Callback = test1_cb;
+    
+    Channel0PWM.Missing = Channel0PWM.Value = 0;
+    Channel0PWM.Callback = Channel0PWM_cb;
 }
 
 // 65,535
 // 48Mhz = 48.000.000hz / 4 = 12.000.000hz = 83,33ns
-// Preescale 256 * 83,33ns = 21.332,48ns = 21,33us
-// Preescale 128 * 83,33ns = 10.666,24ns = 10,66us
+// Preescale 256 * 83,33ns = 21.333,33ns = 21,33us
+// Preescale 128 * 83,33ns = 10.666,66ns = 10,66us
+// Preescale 16 * 83,33ns = 1.333,33ns = 1,333us
 // Timer0 8-bit = 256 * 21,33us = 35.460,48us = 35,46ms
 // Timer0 16-bit - Preescale 128 - Maximum idle time = 65535 * 10,66us = 698.603,10us = 698,60ms
 
-// 1 segundo = 46882
-// 1s = 1.000.000us / 10,66us = 46904
+// 128 preescale 1s = 1.000.000us / 10,66us = 93750
+// 16 preescale 1s = 1.000.000us / 1,33us = 750000
+// 0 preescale 12000004
+
+// 500prm / 60 =  8,333hz = 0,12s = 120ms
+// 120ms = 120.000us / 0,08333us = 144000
+
+// 10khz = 0,0001s = 0,1ms = 100us
+// 16pre = 100us / 1,33us = 75
+// 0pre = 100us / 0,08333us = 1200
+void Channel0SetHighValue();
 
 char step = 0;
-char c0 = 0;
-char c1 = 0;
-
-//unsigned short v1seg = 46875; // 46882;
-//unsigned short v1segmiss = 46875; // 46882; 
-
-//char ZeroCrossDetect()
-//{
-//    c0++;
-//    if (c0 == 255) {
-//        c1++;
-//        if (c1 == 255)
-//            return 1;
-//    }
-//    return 0;
-//}
 
 void SYSTEM_Task() {
     
@@ -155,59 +153,42 @@ void SYSTEM_Task() {
     
     TimerEvent_Check(&test1);
     
-    //unsigned short vdiff = 0;
-    //unsigned short vnow = TMR0L ;
-    //TimerActualValue = TMR0L;
-    //TimerActualValue = (TMR0H << 8) | TimerActualValue;
-    
-    //if (TimerActualValue >= TimerLastValue) {
-    //    TimerDiffValue = TimerActualValue - TimerLastValue;
-    //}
-    //else {
-    //    TimerDiffValue = (0xFFFF - TimerLastValue) + TimerActualValue;
-    //}
-    //TimerLastValue = TimerActualValue;
- 
-    //if ((test1.Missing - TimerDiffValue) > 0) {
-    //    test1.Missing -= TimerDiffValue;
-    //}
-    //else {
-    //    test1.Missing = test1.Value;
-    //    test1.Callback();
-    //}
-    
-    //if ((v1segmiss - TimerDiffValue) > 0) {
-    //    v1segmiss -= TimerDiffValue;
-    //    return;
-    //}
-    //else {
-    //    v1segmiss = v1seg;
-    //}
-    
-    //if (!ZeroCrossDetect())
-    //        return;
-   
-    //test1_cb();
+    TimerEvent_Check(&Channel0PWM);
 }
 
+
 void test1_cb() {
-    USBSTATE ^= 1;
+    POWERON ^= 1;
     
-    step++;
+    if (foward) {
+        if (step == 6)
+            step = 1;
+        else
+            step++;
+    }
+    else {
+        if (step <= 1)
+            step = 6;
+        else
+            step--;
+    }
+    
     
     switch(step) {
         case 1:
         {
             //PORTD = 0b00100100;
+            //PORTD = 0b00100100; // test 2
             
             PHASECH = 0;
-            PHASEAH = 1;
+            Channel0SetHighValue();  //PHASEAH = 1;
             //*PHASEBL = 1;
             break;
         }
         case 2:
         {
             //PORTD = 0b00011000;
+            //PORTD = 0b10000100; // test 2
             
             PHASEBL = 0;
             //*PHASEAH = 1;
@@ -217,15 +198,17 @@ void test1_cb() {
         case 3:
         {
             //PORTD = 0b10010000;
+            //PORTD = 0b10010000; // test 2
             
             PHASEAH = 0;
-            PHASEBH = 1;
+            Channel0SetHighValue();  //PHASEBH = 1;
             //*PHASECL = 1;
             break;
         }
         case 4:
         {
             //PORTD = 0b01100000;
+            //PORTD = 0b00011000; // test 2
             
             PHASECL = 0;
             //*PHASEBH = 1;
@@ -235,21 +218,53 @@ void test1_cb() {
         case 5:
         {
             //PORTD = 0b01001000;
+            //PORTD = 0b01001000; // test 2
             
             PHASEBH = 0;
-            PHASECH = 1;
+            Channel0SetHighValue();  //PHASECH = 1;
             //*PHASEAL = 1;
             break;
         }
         case 6:
         {
             //PORTD = 0b10000100;
+            //PORTD = 0b01100000; // test 2
             
             PHASEAL = 0;
             //*PHASECH = 1;
             PHASEBL = 1;
-            step = 0;
             break;
         }
+    }
+}
+
+
+unsigned char Channel0PWNState = 0;
+
+void Channel0PWM_cb() {
+    if (Channel0PWNState) {
+        Channel0PWM.Missing = Channel0PWN_Off;
+    }
+    else {
+        Channel0PWM.Missing = Channel0PWN_On;
+    }
+    Channel0PWNState ^= 1;
+    Channel0SetHighValue();
+}
+
+void Channel0SetHighValue() {
+    switch(step) {
+        case 1:
+        case 2:
+            PHASEAH = Channel0PWNState;
+            break;
+        case 3:
+        case 4:
+            PHASEBH = Channel0PWNState;
+            break;
+        case 5:
+        case 6:
+            PHASECH = Channel0PWNState;
+            break;
     }
 }

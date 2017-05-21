@@ -10,6 +10,7 @@ void TimerEvent_Tick() {
     
     if (TimerActualValue >= TimerLastValue) {
         TimerDiffValue = TimerActualValue - TimerLastValue;
+        //INTCONbits.TMR0IF = 0;
     }
     else {
         TimerDiffValue = (0xFFFF - TimerLastValue) + TimerActualValue;

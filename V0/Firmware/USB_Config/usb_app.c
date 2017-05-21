@@ -2,6 +2,7 @@
 #include "usb_device_hid.h"
 
 #include "system.h"
+#include "BLDC_Esc.h"
 
 unsigned char ReceivedDataBuffer[64] @ HID_CUSTOM_OUT_DATA_BUFFER_ADDRESS;
 unsigned char ToSendDataBuffer[64] @ HID_CUSTOM_IN_DATA_BUFFER_ADDRESS;
@@ -49,6 +50,42 @@ void APP_DeviceTasks()
                 ToSendDataBuffer[1] = ADRESH;
                 
                 USBInHandle = HIDTxPacket(CUSTOM_DEVICE_HID_EP, (uint8_t*)&ToSendDataBuffer[0],64);
+                break;
+            }
+            case 3:
+            {
+                union ULongConvertion tick;
+                tick.bytes[0] = ReceivedDataBuffer[1];
+                tick.bytes[1] = ReceivedDataBuffer[2];
+                tick.bytes[2] = ReceivedDataBuffer[3];
+                tick.bytes[3] = ReceivedDataBuffer[4];
+                test1.Value = tick.value;
+                break;
+            }
+            case 4:
+            {
+                union ULongConvertion tick;
+                tick.bytes[0] = ReceivedDataBuffer[1];
+                tick.bytes[1] = ReceivedDataBuffer[2];
+                tick.bytes[2] = ReceivedDataBuffer[3];
+                tick.bytes[3] = ReceivedDataBuffer[4];
+                Channel0PWN_On = tick.value;
+                Channel0PWN_Off = Channel0PWM_Width - Channel0PWN_On;
+                break;
+            }
+            case 5:
+            {
+                foward = ReceivedDataBuffer[1];
+                break;
+            }
+            case 6:
+            {
+                union ULongConvertion tick;
+                tick.bytes[0] = ReceivedDataBuffer[1];
+                tick.bytes[1] = ReceivedDataBuffer[2];
+                tick.bytes[2] = ReceivedDataBuffer[3];
+                tick.bytes[3] = ReceivedDataBuffer[4];
+                Channel0PWM_Width = tick.value;
                 break;
             }
             case 10:   // Change the LedControl channel 0
