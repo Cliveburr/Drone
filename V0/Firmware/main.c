@@ -20,7 +20,7 @@ void main(void) {
 
     //while(1)
     //{
-    //    USBSTATE ^= 1;
+    //    LATDbits.LATD6 ^= 1;
     //    t_delay_10ms(100);
     //}
     

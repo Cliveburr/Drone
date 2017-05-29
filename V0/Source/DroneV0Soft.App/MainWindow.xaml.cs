@@ -51,6 +51,18 @@ namespace DroneV0Soft.App
             //     .Select(p => new { Value = p });
         }
 
+        private void UISafe(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show(err.ToString());
+            }
+        }
+
         private void _device_OnMessageReceive(byte[] msg)
         {
             if (msg.Length == 0)
@@ -136,27 +148,114 @@ namespace DroneV0Soft.App
 
         const double timer_value = 0.00000008333333333;
 
-        private void RPM_Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void slStepRPM_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!_afterIni)
                 return;
 
-            var steps = int.Parse(StepsTb.Text);
-            var value = RPM_Slider.Value;
+            UISafe(() =>
+            {
+                SendStepRPMValueChange();
+            });
+        }
 
-            RPM_Label.Content = $"RPM: {value.ToString("0")}";
+        private void tbSteps_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter)
+                return;
+
+            UISafe(() =>
+            {
+                SendStepRPMValueChange();
+            });
+        }
+
+        private void tbRPMmax_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter)
+                return;
+
+            UISafe(() =>
+            {
+                var rpmMax = int.Parse(tbRPMmax.Text);
+                slStepRPM.Maximum = rpmMax;
+            });
+        }
+
+        private void SendStepRPMValueChange()
+        {
+            var steps = int.Parse(tbSteps.Text);
+            var value = slStepRPM.Value;
 
             var hertz = value / 60;    // converte o rpm em hertz
             var period = 1 / hertz;    // converte hertz para periodo
             var tick = period / timer_value;     // calcula o valor do timer para o periodo
-            var tick_step = (uint)(tick / steps);    // divide entre os 36 passos no motor usado
+            var tick_step = (uint)(tick / steps);    // divide entre os passos do motor
 
             var tick_step_bytes = BitConverter.GetBytes(tick_step);
 
             var msg = new byte[] { 3, tick_step_bytes[0], tick_step_bytes[1], tick_step_bytes[2], tick_step_bytes[3] };
             _device.SendMessage(msg);
 
-            RPM_Display.Content = $"RPM tick: {tick.ToString("#,000,000")} - Step tick: {tick_step.ToString("#,000,000")}";
+            var onestepperiodinus = (period / steps * 1000000);
+
+            lbRPMlabel.Content = $"RPM: {value.ToString("0")}";
+            lbRPMdisplay.Content = $"RPM tick: {tick.ToString("#,##0.000")} - Step tick: {tick_step.ToString("#,##0.000")}";
+            lbStepWidth.Content = $"{onestepperiodinus.ToString("#,##0.000")}us";
+        }
+
+        private void tgbCClock_Click(object sender, RoutedEventArgs e)
+        {
+            var value = tgbCClock.IsChecked ?? false ? 1 : 0;
+
+            UISafe(() =>
+            {
+                var msg = new byte[] { 5, (byte)value };
+                _device.SendMessage(msg);
+            });
+        }
+
+        public void tglRunning_Click(object sender, RoutedEventArgs e)
+        {
+            var value = tglRunning.IsChecked ?? false ? 1 : 0;
+
+            UISafe(() =>
+            {
+                var msg = new byte[] { 7, (byte)value };
+                _device.SendMessage(msg);
+            });
+        }
+
+        public void btOneStep_Click(object sender, RoutedEventArgs e)
+        {
+            UISafe(() =>
+            {
+                var msg = new byte[] { 8 };
+                _device.SendMessage(msg);
+            });
+        }
+
+        private void tbPWMwidth_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter)
+                return;
+
+            UISafe(() =>
+            {
+                SendPWMValuesChange();
+            });
+
+            //    var hertz = double.Parse(tbPWMwidth.Text);
+            //var period = 1 / hertz;    // converte hertz para periodo
+            //var tick = (uint)(period / timer_value);     // calcula o valor do timer para o periodo
+
+            //var tick_bytes = BitConverter.GetBytes(tick);
+
+            //var msg = new byte[] { 6, tick_bytes[0], tick_bytes[1], tick_bytes[2], tick_bytes[3] };
+            //_device.SendMessage(msg);
+
+            //PWM_Slider.Value = tick / 2;
+            //PWM_Slider.Maximum = tick;
         }
 
         private void PWM_Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -164,44 +263,69 @@ namespace DroneV0Soft.App
             if (!_afterIni)
                 return;
 
-            var value = PWM_Slider.Value;
+            UISafe(() =>
+            {
+                SendPWMValuesChange();
+            });
 
-            PWM_Label.Content = $"PWM: {value.ToString("0")}";
+            //var value = PWM_Slider.Value;
 
-            var pwm_on = (uint)(value);
+            //PWM_Label.Content = $"PWM: {value.ToString("0")}";
 
-            var pwm_on_bytes = BitConverter.GetBytes(pwm_on);
+            //var pwm_on = (uint)(value);
 
-            var msg = new byte[] { 4, pwm_on_bytes[0], pwm_on_bytes[1], pwm_on_bytes[2], pwm_on_bytes[3] };
-            _device.SendMessage(msg);
+            //var pwm_on_bytes = BitConverter.GetBytes(pwm_on);
 
-            PWM_Display.Content = $"PWM Maxium tick: {PWM_Slider.Maximum.ToString("#,000")} - On tick: {pwm_on.ToString("#,000")} - Off tick: {(PWM_Slider.Maximum - pwm_on).ToString("#,000")}";
+            //var msg = new byte[] { 4, pwm_on_bytes[0], pwm_on_bytes[1], pwm_on_bytes[2], pwm_on_bytes[3] };
+            //_device.SendMessage(msg);
+
+            //PWM_Display.Content = $"PWM Maxium tick: {PWM_Slider.Maximum.ToString("#,000")} - On tick: {pwm_on.ToString("#,000")} - Off tick: {(PWM_Slider.Maximum - pwm_on).ToString("#,000")}";
         }
 
-        private void CClockTb_Checked_Unchecked(object sender, RoutedEventArgs e)
+        private void slPWMadcon_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            var value = CClockTb.IsChecked ?? false ? 1 : 0;
-
-            var msg = new byte[] { 5, (byte)value };
-            _device.SendMessage(msg);
-        }
-
-        private void PWMWidthTb_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key != Key.Enter)
+            if (!_afterIni)
                 return;
 
-            var hertz = double.Parse(PWMWidthTb.Text);
-            var period = 1 / hertz;    // converte hertz para periodo
-            var tick = (uint)(period / timer_value);     // calcula o valor do timer para o periodo
+            UISafe(() =>
+            {
+                SendPWMValuesChange();
+            });
+        }
 
-            var tick_bytes = BitConverter.GetBytes(tick);
+        private void SendPWMValuesChange()
+        {
+            var pwmhertz = double.Parse(tbPWMwidth.Text);
+            var pwmperiod = 1 / pwmhertz;    // converte hertz para periodo
+            var pwmtick = (uint)(pwmperiod / timer_value);     // calcula o valor do timer para o periodo
 
-            var msg = new byte[] { 6, tick_bytes[0], tick_bytes[1], tick_bytes[2], tick_bytes[3] };
+            PWM_Slider.Maximum = pwmtick;
+
+            var onvalue = PWM_Slider.Value;
+            var onvaluebeforeadcpercent = slPWMadcon.Value;
+            var onvaluebeforeadc = (onvaluebeforeadcpercent * onvalue) / 100;
+            var onvalueafteradc = onvalue - onvaluebeforeadc;
+            var onvalueoff = pwmtick - onvalue;
+
+            var pwmonbeforeadc_bytes = BitConverter.GetBytes((uint)onvaluebeforeadc);
+            var pwmonafteradc_bytes = BitConverter.GetBytes((uint)onvalueafteradc);
+            var pwmoff_bytes = BitConverter.GetBytes((uint)onvalueoff);
+
+            var msg = new byte[] { 4,
+                pwmonbeforeadc_bytes[0], pwmonbeforeadc_bytes[1], pwmonbeforeadc_bytes[2], pwmonbeforeadc_bytes[3],
+                pwmonafteradc_bytes[0], pwmonafteradc_bytes[1], pwmonafteradc_bytes[2], pwmonafteradc_bytes[3],
+                pwmoff_bytes[0], pwmoff_bytes[1], pwmoff_bytes[2], pwmoff_bytes[3]
+            };
             _device.SendMessage(msg);
 
-            PWM_Slider.Value = tick / 2;
-            PWM_Slider.Maximum = tick;
+            var pwmperiodus = pwmperiod * 1000000;
+            var onvaluebeforeadcus = onvaluebeforeadc * timer_value * 1000000;
+
+            PWM_Label.Content = $"PWM on: {onvalue.ToString("#.000")}";
+            lbPWMadcon.Content = $"Adc aquisition: {slPWMadcon.Value.ToString("#.000")}%";
+            lbPWMwidth.Content = $"{pwmperiodus.ToString("#.000")}us";
+            lbAdcTiming.Content = $"{onvaluebeforeadcus.ToString("#.000")}us";
+            PWM_Display.Content = $"PWM Maxium tick: {PWM_Slider.Maximum.ToString("#,000")} - On tick: {onvalue.ToString("#,000")} - Off tick: {(PWM_Slider.Maximum - onvalue).ToString("#,000")}";
         }
     }
 }

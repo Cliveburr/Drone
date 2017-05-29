@@ -5,41 +5,66 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DroneV0Soft.App"
         mc:Ignorable="d"
-        Title="MainWindow" Height="570.188" Width="1102.187">
+        Title="MainWindow" Height="650" Width="1102.187">
     <Grid>
-        <TabControl x:Name="tabControl" Margin="3,3,3,3" >
-            <TabItem Header="basic">
-                <Grid Background="#FFE5E5E5">
-                    <DockPanel>
-                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-                            <Button Margin="3,3,3,3" Content="Probe" Width="75" Click="Probe_Click"/>
-                        </StackPanel>
-                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-                            <Button x:Name="button" Margin="3,3,3,3" Content="Switch Power" Width="75" Click="button_Click"/>
-                            <Label x:Name="label" Margin="3,3,3,3" Content="Label" />
-                        </StackPanel>
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <ToggleButton x:Name="CClockTb" Margin="3,3,3,3" Content="Counter-Clockwise" Checked="CClockTb_Checked_Unchecked" Unchecked="CClockTb_Checked_Unchecked"></ToggleButton>
-                                <Label Content="PWM Width (Hz):" />
-                                <TextBox x:Name="PWMWidthTb" Margin="3,3,3,3" Width="100" Text="10000" KeyDown="PWMWidthTb_KeyDown"></TextBox>
-                                <Label Content="Steps:" />
-                                <TextBox x:Name="StepsTb" Margin="3,3,3,3" Width="100" Text="18"></TextBox>
-                            </StackPanel>
-                            <Label x:Name="RPM_Label" Margin="3,3,3,3" Content="RPM: 10" />
-                            <Slider x:Name="RPM_Slider" Margin="3,3,3,3" Delay="500" Maximum="1000" Minimum="1" Value="10" ValueChanged="RPM_Slider_ValueChanged" />
-                            <Label x:Name="PWM_Label" Margin="3,3,3,3" Content="PWM: 600" />
-                            <Slider x:Name="PWM_Slider" Margin="3,3,3,3" Delay="500" Maximum="1200" Minimum="0" Value="600" ValueChanged="PWM_Slider_ValueChanged"/>
-                            <Label x:Name="RPM_Display" Margin="3,3,3,3" Content="RPM:" />
-                            <Label x:Name="PWM_Display" Margin="3,3,3,3" Content="PWM:" />
-                        </StackPanel>
-                    </DockPanel>
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                <Button Margin="3,3,3,3" Content="Probe" Width="75" Click="Probe_Click"/>
+            </StackPanel>
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                <Button x:Name="button" Margin="3,3,3,3" Content="Switch Power" Width="75" Click="button_Click"/>
+                <Label x:Name="label" Margin="3,3,3,3" Content="Label" />
+            </StackPanel>
+            <GroupBox Margin="5" DockPanel.Dock="Top" Header="Step:">
+                <DockPanel Margin="5">
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                        <ToggleButton x:Name="tgbCClock" Margin="3" Content="Counter-Clockwise" Width="120" Click="tgbCClock_Click"></ToggleButton>
+                        <ToggleButton x:Name="tglRunning" Margin="3" Content="Toogle Running" Width="120" Click="tglRunning_Click"/>
+                        <Button x:Name="btOneStep" Margin="3" Content="One Step" Width="120" Click="btOneStep_Click"/>
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                        <Label Content="Steps:" />
+                        <TextBox x:Name="tbSteps" Margin="3" Width="100" Text="30" KeyDown="tbSteps_KeyDown"></TextBox>
+                        <Label Content="RPM Max:" />
+                        <TextBox x:Name="tbRPMmax" Margin="3" Width="100" Text="1000" KeyDown="tbRPMmax_KeyDown"></TextBox>
+                    </StackPanel>
+                    <Label DockPanel.Dock="Top" x:Name="lbRPMlabel" Margin="3" Content="RPM: 0" />
+                    <Label DockPanel.Dock="Bottom" x:Name="lbRPMdisplay" Margin="3" Content="RPM tick: 0  - Step tick: 0" />
+                    <Slider x:Name="slStepRPM" Margin="3" Delay="500" Maximum="1000" Minimum="1" Value="0" ValueChanged="slStepRPM_ValueChanged" />
+                </DockPanel>
+            </GroupBox>
+            <GroupBox Margin="5" DockPanel.Dock="Top" Header="PWM positive pulse:">
+                <StackPanel Margin="5">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="PWM Width (Hz):" />
+                        <TextBox x:Name="tbPWMwidth" Margin="3" Width="100" Text="10000" KeyDown="tbPWMwidth_KeyDown"></TextBox>
+                    </StackPanel>
+                    <Label x:Name="PWM_Label" Margin="3" Content="PWM on: 0" />
+                    <Slider x:Name="PWM_Slider" Margin="3" Delay="500" Maximum="1200" Minimum="0" Value="600" ValueChanged="PWM_Slider_ValueChanged"/>
+                    <Label x:Name="lbPWMadcon" Margin="3" Content="Adc aquisition: 50%" />
+                    <Slider x:Name="slPWMadcon" Margin="3" Delay="500" Maximum="100" Minimum="0" Value="50" ValueChanged="slPWMadcon_ValueChanged"/>
+                    <Label x:Name="PWM_Display" Margin="3" Content="PWM:" />
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Margin="5" Header="Step:">
+                <Grid>
+                    <Polyline StrokeThickness="1" Stroke="Black" Points="10,10,10,100"></Polyline>
+                    <Polyline StrokeThickness="1" Stroke="Black" Points="410,10,410,100"></Polyline>
+                    <Polyline StrokeThickness="1" Stroke="Black" Points="10,100,60,100,60,50,
+                              85,50,85,30,85,50,110,50,
+                              110,100,160,100,160,50,
+                              185,50,185,30,185,50,210,50,
+                              210,100,260,100,260,50,
+                              285,50,285,30,285,50,310,50,
+                              310,100,360,100,360,50,
+                              385,50,385,30,385,50,410,50"></Polyline>
+                    <Polyline StrokeThickness="1" Stroke="Black" Points="10,110,410,110"></Polyline>
+                    <Polyline StrokeThickness="1" Stroke="Black" Points="60,20,160,20"></Polyline>
+                    <Label x:Name="lbStepWidth" Margin="176,107,0,0">0us</Label>
+                    <Label x:Name="lbPWMwidth" Margin="82,0,24,107">0us</Label>
+                    <Label x:Name="lbAdcTiming" Margin="262,0,-230,107">0us</Label>
                 </Grid>
-            </TabItem>
-            <TabItem Header="Probe">
-                <Grid Background="#FFE5E5E5">
-                </Grid>
-            </TabItem>
-        </TabControl>
+            </GroupBox>
+        </DockPanel>
     </Grid>
 </Window>

@@ -25,13 +25,22 @@ union ULongConvertion {
    unsigned char bytes[4];
 };
 
-struct TimerEventStruct test1;
 
-unsigned long Channel0PWM_Width = 1200;
-unsigned int Channel0PWN_On = 600;
-unsigned int Channel0PWN_Off = 600;
+struct ChannelStruct {
+    unsigned char step;
+    unsigned char isFoward;
+    unsigned char isRunning;
+    unsigned char isOneStep;
+    struct TimerEventStruct stepTimer;
+    unsigned char pwmState;
+    unsigned int pwmOnBeforeAdc;
+    unsigned int pwmOnAfterAdc;
+    unsigned int pwmOff;
+    struct TimerEventStruct pwmTimer;
+    unsigned char adcIndex;
+    unsigned char adcValues[64];
+};
 
-unsigned char foward = 1;
-
+struct ChannelStruct Channel0;
 
 #endif	/* BLDC_ESC */

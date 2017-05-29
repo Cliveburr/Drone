@@ -27,10 +27,12 @@ namespace DroneV0Soft.App
         private DateTime _viewStart;
         private Random rnd = new Random();
         private Device _device;
+        private DateTime _lastTime;
 
         public ProbeWindow(Device device)
         {
             _device = device;
+            _lastTime = DateTime.Now;
 
             InitializeComponent();
 
@@ -139,15 +141,30 @@ namespace DroneV0Soft.App
             var msg = new byte[] { 2 };
             var read = await _device.WriteAndRead(msg);
 
-            var c0value = (read[1] << 8) | (read[0]);
+            //var c0value = (read[1] << 8) | (read[0]);
             //var c0volt = c0value * adc;
-            var c0point = new ProbePoint(now, (uint)c0value);
+            //var c0point = new ProbePoint(now, (uint)c0value);
+
+            var spacebetween = now - _lastTime;
+            var spaceforeach = spacebetween.Ticks / 32;
+
+            var lists = new List<ProbePoint>();
+            for (var i = 0; i < 32; i++)
+            {
+                var value = (read[(i * 2) + 1] << 8) | (read[i * 2]);
+                lists.Add(new ProbePoint(now.AddTicks(i * spaceforeach), (uint)value));
+            }
+
+            _lastTime = now;
 
             Dispatcher.Invoke(() =>
             {
                 var context = DataContext as ProbeContext;
 
-                ProbeAddPointOnChannel(_channels[0], c0point);
+                foreach (var point in lists)
+                {
+                    ProbeAddPointOnChannel(_channels[0], point);
+                }
 
                 if (false)  // simulation
                 {

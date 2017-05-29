@@ -1,5 +1,6 @@
 #include <xc.h>
 #include "system.h"
+#include <string.h>
 //#include "system_config.h"
 //#include "usb.h"
 
@@ -69,9 +70,9 @@
 // CONFIG7H
 #pragma config EBTRB = OFF      // Boot Block Table Read Protection bit (Boot block (000000-0007FFh) is not protected from table reads executed in other blocks)
 
-struct TimerEventStruct Channel0PWM;
-void test1_cb();
+void Channel0Step_cb();
 void Channel0PWM_cb();
+void Channel0SetHighValue();
 
 void SYSTEM_Initialize()
 {
@@ -118,11 +119,15 @@ void SYSTEM_Initialize()
     T0CON = 0b10001011;
     
     //test1.Value = 46875;
-    test1.Missing = test1.Value = 6000004; //144000;
-    test1.Callback = test1_cb;
+    //test1.Missing = test1.Value = 6000004; //144000;
+    //test1.Callback = test1_cb;
     
-    Channel0PWM.Missing = Channel0PWM.Value = 0;
-    Channel0PWM.Callback = Channel0PWM_cb;
+    //Channel0PWM.Missing = Channel0PWM.Value = 0;
+    //Channel0PWM.Callback = Channel0PWM_cb;
+    
+    Channel0.isRunning = 0;
+    Channel0.stepTimer.Callback = Channel0Step_cb;
+    Channel0.pwmTimer.Callback = Channel0PWM_cb;
 }
 
 // 65,535
@@ -137,134 +142,144 @@ void SYSTEM_Initialize()
 // 16 preescale 1s = 1.000.000us / 1,33us = 750000
 // 0 preescale 12000004
 
-// 500prm / 60 =  8,333hz = 0,12s = 120ms
+// 500rpm / 60 =  8,333hz = 0,12s = 120ms
 // 120ms = 120.000us / 0,08333us = 144000
 
 // 10khz = 0,0001s = 0,1ms = 100us
 // 16pre = 100us / 1,33us = 75
 // 0pre = 100us / 0,08333us = 1200
-void Channel0SetHighValue();
-
-char step = 0;
 
 void SYSTEM_Task() {
     
     TimerEvent_Tick();
     
-    TimerEvent_Check(&test1);
+    TimerEvent_Check(&Channel0.stepTimer);
     
-    TimerEvent_Check(&Channel0PWM);
+    TimerEvent_Check(&Channel0.pwmTimer);
 }
 
 
-void test1_cb() {
+void Channel0Step_cb() {
     POWERON ^= 1;
     
-    if (foward) {
-        if (step == 6)
-            step = 1;
+    if (!Channel0.isRunning)
+        return;
+    
+    if (Channel0.isFoward) {
+        if (Channel0.step == 6)
+            Channel0.step = 1;
         else
-            step++;
+            Channel0.step++;
+        
+        switch(Channel0.step) {
+            case 1:
+                PHASECH = 0;
+                Channel0SetHighValue();
+                break;
+            case 2:
+                PHASEBL = 0;
+                PHASECL = 1;
+                break;
+            case 3:
+                PHASEAH = 0;
+                Channel0SetHighValue();
+                break;
+            case 4:
+                PHASECL = 0;
+                PHASEAL = 1;
+                break;
+            case 5:
+                PHASEBH = 0;
+                Channel0SetHighValue();
+                break;
+            case 6:
+                PHASEAL = 0;
+                PHASEBL = 1;
+                break;
+        }
     }
     else {
-        if (step <= 1)
-            step = 6;
+        if (Channel0.step <= 1)
+            Channel0.step = 6;
         else
-            step--;
+            Channel0.step--;
+        
+        switch(Channel0.step) {
+            case 1:
+                PHASECL = 0;
+                PHASEBL = 1;
+                break;
+            case 2:
+                PHASEBH = 0;
+                Channel0SetHighValue();
+                break;
+            case 3:
+                PHASEAL = 0;
+                PHASECL = 1;
+                break;
+            case 4:
+                PHASECH = 0;
+                Channel0SetHighValue();
+                break;
+            case 5:
+                PHASEBL = 0;
+                PHASEAL = 1;
+                break;
+            case 6:
+                PHASEAH = 0;
+                Channel0SetHighValue();
+                break;
+        }
     }
     
-    
-    switch(step) {
-        case 1:
-        {
-            //PORTD = 0b00100100;
-            //PORTD = 0b00100100; // test 2
-            
-            PHASECH = 0;
-            Channel0SetHighValue();  //PHASEAH = 1;
-            //*PHASEBL = 1;
-            break;
-        }
-        case 2:
-        {
-            //PORTD = 0b00011000;
-            //PORTD = 0b10000100; // test 2
-            
-            PHASEBL = 0;
-            //*PHASEAH = 1;
-            PHASECL = 1;
-            break;
-        }
-        case 3:
-        {
-            //PORTD = 0b10010000;
-            //PORTD = 0b10010000; // test 2
-            
-            PHASEAH = 0;
-            Channel0SetHighValue();  //PHASEBH = 1;
-            //*PHASECL = 1;
-            break;
-        }
-        case 4:
-        {
-            //PORTD = 0b01100000;
-            //PORTD = 0b00011000; // test 2
-            
-            PHASECL = 0;
-            //*PHASEBH = 1;
-            PHASEAL = 1;
-            break;
-        }
-        case 5:
-        {
-            //PORTD = 0b01001000;
-            //PORTD = 0b01001000; // test 2
-            
-            PHASEBH = 0;
-            Channel0SetHighValue();  //PHASECH = 1;
-            //*PHASEAL = 1;
-            break;
-        }
-        case 6:
-        {
-            //PORTD = 0b10000100;
-            //PORTD = 0b01100000; // test 2
-            
-            PHASEAL = 0;
-            //*PHASECH = 1;
-            PHASEBL = 1;
-            break;
-        }
+    if (Channel0.isOneStep) {
+        Channel0.isRunning = 0;
+        Channel0.isOneStep = 0;
     }
 }
 
-
-unsigned char Channel0PWNState = 0;
-
 void Channel0PWM_cb() {
-    if (Channel0PWNState) {
-        Channel0PWM.Missing = Channel0PWN_Off;
+    Channel0.pwmState += 1;
+    
+    switch (Channel0.pwmState) {
+        case 1:
+            Channel0SetHighValue();
+            Channel0.pwmTimer.Missing = Channel0.pwmOnBeforeAdc;
+            //ADCON0bits.GO_DONE = 1;
+            break;
+        case 2:
+            Channel0.pwmTimer.Missing = Channel0.pwmOnAfterAdc;
+            
+            //Channel0.adcValues[(Channel0.adcIndex * 2)] = ADRESL;
+            //Channel0.adcValues[(Channel0.adcIndex * 2) + 1] = ADRESH;
+            //Channel0.adcIndex++;
+            //if (Channel0.adcIndex == 31) {
+            //    Channel0.adcIndex = 0;
+            //    memset(Channel0.adcValues, 0, 64);
+            //}
+            
+            break;
+        case 3:
+            Channel0SetHighValue();
+            Channel0.pwmTimer.Missing = Channel0.pwmOff;
+            Channel0.pwmState = 0;
+            break;
     }
-    else {
-        Channel0PWM.Missing = Channel0PWN_On;
-    }
-    Channel0PWNState ^= 1;
-    Channel0SetHighValue();
 }
 
 void Channel0SetHighValue() {
-    switch(step) {
+    switch(Channel0.step) {
         case 1:
         case 2:
-            PHASEAH = Channel0PWNState;
+            PHASEAH = Channel0.pwmState != 3;
             break;
         case 3:
         case 4:
-            PHASEBH = Channel0PWNState;
+            PHASEBH = Channel0.pwmState != 3;
             break;
         case 5:
         case 6:
-            PHASECH = Channel0PWNState;
+            PHASECH = Channel0.pwmState != 3;
             break;
     }
 }

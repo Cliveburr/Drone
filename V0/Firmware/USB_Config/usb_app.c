@@ -44,48 +44,65 @@ void APP_DeviceTasks()
             case 2:
             {
                 //ToSendDataBuffer[0] = BUTTON;
-                ADCON0bits.GO_DONE = 1;
-                while(ADCON0bits.GO_DONE != 0);
-                ToSendDataBuffer[0] = ADRESL;
-                ToSendDataBuffer[1] = ADRESH;
+                //ADCON0bits.GO_DONE = 1;
+                //while(ADCON0bits.GO_DONE != 0);
+                //ToSendDataBuffer[0] = ADRESL;
+                //ToSendDataBuffer[1] = ADRESH;
+                unsigned char i = 0;
+                for (; i < 64; i++) {
+                    ToSendDataBuffer[i] = Channel0.adcValues[i];
+                }
                 
                 USBInHandle = HIDTxPacket(CUSTOM_DEVICE_HID_EP, (uint8_t*)&ToSendDataBuffer[0],64);
                 break;
             }
-            case 3:
+            case 3:  // Channel0 step value change
             {
                 union ULongConvertion tick;
                 tick.bytes[0] = ReceivedDataBuffer[1];
                 tick.bytes[1] = ReceivedDataBuffer[2];
                 tick.bytes[2] = ReceivedDataBuffer[3];
                 tick.bytes[3] = ReceivedDataBuffer[4];
-                test1.Value = tick.value;
+                Channel0.stepTimer.Value = tick.value;
                 break;
             }
-            case 4:
+            case 4:  // Channel0 pwm values change
             {
                 union ULongConvertion tick;
                 tick.bytes[0] = ReceivedDataBuffer[1];
                 tick.bytes[1] = ReceivedDataBuffer[2];
                 tick.bytes[2] = ReceivedDataBuffer[3];
                 tick.bytes[3] = ReceivedDataBuffer[4];
-                Channel0PWN_On = tick.value;
-                Channel0PWN_Off = Channel0PWM_Width - Channel0PWN_On;
+                Channel0.pwmOnBeforeAdc = tick.value;
+                tick.bytes[0] = ReceivedDataBuffer[5];
+                tick.bytes[1] = ReceivedDataBuffer[6];
+                tick.bytes[2] = ReceivedDataBuffer[7];
+                tick.bytes[3] = ReceivedDataBuffer[8];
+                Channel0.pwmOnAfterAdc = tick.value;
+                tick.bytes[0] = ReceivedDataBuffer[9];
+                tick.bytes[1] = ReceivedDataBuffer[10];
+                tick.bytes[2] = ReceivedDataBuffer[11];
+                tick.bytes[3] = ReceivedDataBuffer[12];
+                Channel0.pwmOff = tick.value;
                 break;
             }
-            case 5:
+            case 5:  // Channel0 isfoward change
             {
-                foward = ReceivedDataBuffer[1];
+                Channel0.isFoward = ReceivedDataBuffer[1];
                 break;
             }
             case 6:
             {
-                union ULongConvertion tick;
-                tick.bytes[0] = ReceivedDataBuffer[1];
-                tick.bytes[1] = ReceivedDataBuffer[2];
-                tick.bytes[2] = ReceivedDataBuffer[3];
-                tick.bytes[3] = ReceivedDataBuffer[4];
-                Channel0PWM_Width = tick.value;
+                break;
+            }
+            case 7:  // Channel0 isrunning change
+            {
+                Channel0.isRunning = ReceivedDataBuffer[1];
+                break;
+            }
+            case 8:  // Channel0 one step
+            {
+                Channel0.isOneStep = Channel0.isRunning = 1;
                 break;
             }
             case 10:   // Change the LedControl channel 0
