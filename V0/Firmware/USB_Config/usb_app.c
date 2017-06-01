@@ -52,6 +52,7 @@ void APP_DeviceTasks()
                 for (; i < 64; i++) {
                     ToSendDataBuffer[i] = Channel0.adcValues[i];
                 }
+                memset(Channel0.adcValues, 0, 64);
                 
                 USBInHandle = HIDTxPacket(CUSTOM_DEVICE_HID_EP, (uint8_t*)&ToSendDataBuffer[0],64);
                 break;
@@ -98,6 +99,10 @@ void APP_DeviceTasks()
             case 7:  // Channel0 isrunning change
             {
                 Channel0.isRunning = ReceivedDataBuffer[1];
+                if (Channel0.isRunning) {
+                    Channel0.stepTimer.Missing = Channel0.stepTimer.Value;
+                    Channel0.pwmTimer.Missing = Channel0.pwmTimer.Value;
+                }
                 break;
             }
             case 8:  // Channel0 one step

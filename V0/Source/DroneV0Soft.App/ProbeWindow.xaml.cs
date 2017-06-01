@@ -141,18 +141,23 @@ namespace DroneV0Soft.App
             var msg = new byte[] { 2 };
             var read = await _device.WriteAndRead(msg);
 
+            var lists = new List<ProbePoint>();
+            var count = read[0];
+
             //var c0value = (read[1] << 8) | (read[0]);
             //var c0volt = c0value * adc;
             //var c0point = new ProbePoint(now, (uint)c0value);
 
-            var spacebetween = now - _lastTime;
-            var spaceforeach = spacebetween.Ticks / 32;
-
-            var lists = new List<ProbePoint>();
-            for (var i = 0; i < 32; i++)
+            if (count > 0)
             {
-                var value = (read[(i * 2) + 1] << 8) | (read[i * 2]);
-                lists.Add(new ProbePoint(now.AddTicks(i * spaceforeach), (uint)value));
+                var spacebetween = now - _lastTime;
+                var spaceforeach = spacebetween.Ticks / count;
+
+                for (var i = 0; i < count; i++)
+                {
+                    var value = (read[(i * 2) + 2] << 8) | (read[(i * 2) + 1]);
+                    lists.Add(new ProbePoint(now.AddTicks(i * spaceforeach), (uint)value));
+                }
             }
 
             _lastTime = now;

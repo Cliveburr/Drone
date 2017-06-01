@@ -37,7 +37,6 @@ struct ChannelStruct {
     unsigned int pwmOnAfterAdc;
     unsigned int pwmOff;
     struct TimerEventStruct pwmTimer;
-    unsigned char adcIndex;
     unsigned char adcValues[64];
 };
 

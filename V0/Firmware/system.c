@@ -10,7 +10,7 @@
 
 // CONFIG1L
 #pragma config PLLDIV = 5       // PLL Prescaler Selection bits (No prescale (4 MHz oscillator input drives PLL directly))
-#pragma config CPUDIV = OSC2_PLL3// System Clock Postscaler Selection bits ([Primary Oscillator Src: /1][96 MHz PLL Src: /2])
+#pragma config CPUDIV = OSC1_PLL2// System Clock Postscaler Selection bits ([Primary Oscillator Src: /1][96 MHz PLL Src: /2])
 #pragma config USBDIV = 2       // USB Clock Selection bit (used in Full-Speed USB mode only; UCFG:FSEN = 1) (USB clock source comes directly from the primary oscillator block with no postscale)
 
 // CONFIG1H
@@ -36,7 +36,7 @@
 
 // CONFIG4L
 #pragma config STVREN = ON      // Stack Full/Underflow Reset Enable bit (Stack full/underflow will cause Reset)
-#pragma config LVP = ON         // Single-Supply ICSP Enable bit (Single-Supply ICSP enabled)
+#pragma config LVP = OFF         // Single-Supply ICSP Enable bit (Single-Supply ICSP enabled)
 #pragma config ICPRT = OFF      // Dedicated In-Circuit Debug/Programming Port (ICPORT) Enable bit (ICPORT disabled)
 #pragma config XINST = OFF      // Extended Instruction Set Enable bit (Instruction set extension and Indexed Addressing mode disabled (Legacy mode))
 
@@ -87,14 +87,14 @@ void SYSTEM_Initialize()
     // bit 7    - A/D Result Format Select bit (1 = Right justified, 0 = Left justified)
     // bit 6    - Unimplemented
     // bit 3-5  - A/D Acquisition Time Select bits (001 = 2 TAD)
-    // bit 0-2  - A/D Conversion Clock Select bits (000 =  FOSC/2)
-    ADCON2 = 0b10001000;
+    // bit 0-2  - A/D Conversion Clock Select bits (110 =  TOSC * 64)
+    ADCON2 = 0b10001110;
 
     // bit 0    - A/D On bit
     // bit 1    - Go/Done 1 = progress 0 = idle
     // bit 2-5  - Analog Channel Select bits   (0000 = AN0)
     // bit 6-7  - Unimplemented
-    ADCON0 = 0b00000001;
+    ADCON0 = 0b00000000;
     
     INTCON = 0b00000000;
     //TRISIO = 0b00000000;  // Set port as input or output, 0 output, 1 input
@@ -128,6 +128,8 @@ void SYSTEM_Initialize()
     Channel0.isRunning = 0;
     Channel0.stepTimer.Callback = Channel0Step_cb;
     Channel0.pwmTimer.Callback = Channel0PWM_cb;
+    
+    //Channel0.stepTimer.Missing = Channel0.stepTimer.Value = 6000004;
 }
 
 // 65,535
@@ -150,7 +152,7 @@ void SYSTEM_Initialize()
 // 0pre = 100us / 0,08333us = 1200
 
 void SYSTEM_Task() {
-    
+
     TimerEvent_Tick();
     
     TimerEvent_Check(&Channel0.stepTimer);
@@ -160,7 +162,7 @@ void SYSTEM_Task() {
 
 
 void Channel0Step_cb() {
-    POWERON ^= 1;
+    //POWERON ^= 1;
     
     if (!Channel0.isRunning)
         return;
@@ -246,18 +248,44 @@ void Channel0PWM_cb() {
             Channel0SetHighValue();
             Channel0.pwmTimer.Missing = Channel0.pwmOnBeforeAdc;
             //ADCON0bits.GO_DONE = 1;
+            switch (Channel0.step) {
+                case 3:
+                case 6:
+                    //ADCON0 = 0b00000001;   // channel A - set the AN0 port and start the capacitor
+                    break;
+                case 2:
+                case 5:
+                    //ADCON0 = 0b00000001;   // channel B - set the AN0 port and start the capacitor
+                    break;
+                case 1:
+                case 4:
+                    ADCON0 = 0b00000001;   // channel C - set the AN0 port and start the capacitor
+                    break;
+            }
             break;
         case 2:
             Channel0.pwmTimer.Missing = Channel0.pwmOnAfterAdc;
             
-            //Channel0.adcValues[(Channel0.adcIndex * 2)] = ADRESL;
-            //Channel0.adcValues[(Channel0.adcIndex * 2) + 1] = ADRESH;
-            //Channel0.adcIndex++;
-            //if (Channel0.adcIndex == 31) {
-            //    Channel0.adcIndex = 0;
-            //    memset(Channel0.adcValues, 0, 64);
-            //}
+            if (Channel0.step == 1 || Channel0.step == 3) {
+            ADCON0bits.GO_DONE = 1;
+            while (ADCON0bits.GO_DONE);
             
+            ADCON0 = 0b00000000;
+            
+            unsigned char count = Channel0.adcValues[0];
+            
+            if (count == 31) {
+                memset(Channel0.adcValues, 0, 64);
+                Channel0.adcValues[1] = ADRESL;
+                Channel0.adcValues[2] = ADRESH;
+                Channel0.adcValues[0] = 1;
+            }
+            else {
+                Channel0.adcValues[(count * 2) + 1] = ADRESL;
+                Channel0.adcValues[(count * 2) + 2] = ADRESH;
+                Channel0.adcValues[0] = ++count;
+            }
+            }
             break;
         case 3:
             Channel0SetHighValue();

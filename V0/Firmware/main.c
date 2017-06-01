@@ -20,7 +20,8 @@ void main(void) {
 
     //while(1)
     //{
-    //    LATDbits.LATD6 ^= 1;
+    //    LATBbits.LATB2 = PORTBbits.RB2 ^ 1;
+    //    //POWERON ^= 1;
     //    t_delay_10ms(100);
     //}
     
