@@ -10,7 +10,7 @@
 //#include "LedControl.h"
 
 #define POWERON PORTBbits.RB2
-#define USBSTATE PORTAbits.RA2
+#define USBSTATE PORTBbits.RB5
 #define USBGETSIGNAL PORTCbits.RC2
 #define BUTTON PORTCbits.RC1
 

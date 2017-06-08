@@ -74,6 +74,10 @@ void Channel0Step_cb();
 void Channel0PWM_cb();
 void Channel0SetHighValue();
 
+void Channel0Step_cb_hard();
+void Channel0PWM_cb_hard();
+void Channel0SetValue_hard(unsigned char value);
+
 void SYSTEM_Initialize()
 {
     //ANSEL = 0b00000000;   // Set port as digital or analogic, 0 digital, 1 analogic
@@ -82,7 +86,7 @@ void SYSTEM_Initialize()
     // bit 4    - Voltage Reference Configuration bit (1 = VREF+, 0 = VDD)
     // bit 5    - Voltage Reference Configuration bit (1 = VREF-, 0 = VSS)
     // bit 6-7  - Unimplemented
-    ADCON1 = 0b00001110;
+    ADCON1 = 0b00001011;
     
     // bit 7    - A/D Result Format Select bit (1 = Right justified, 0 = Left justified)
     // bit 6    - Unimplemented
@@ -96,19 +100,38 @@ void SYSTEM_Initialize()
     // bit 6-7  - Unimplemented
     ADCON0 = 0b00000000;
     
+    
+    // bit 0-2  - Comparator Mode bits
+    // bit 3    - Comparator Input Switch bit
+    // bit 4    - Comparator 1 Output Inversion bit
+    // bit 5    - Comparator 2 Output Inversion bit
+    // bit 6    - Comparator 1 Output bit (1 = C1 VIN+ > C1 VIN)
+    // bit 7    - Comparator 2 Output bit (1 = C2 VIN+ > C2 VIN-)
+    CMCON = 0b00110110;
+    
+    // bit 0-3  - Comparator VREF Value Selection bits
+    // bit 4    - Comparator VREF Source Selection bit
+    // bit 5    - Comparator VREF Range Selection bit
+    // bit 6    - Comparator VREF Output Enable bit
+    // bit 7    - Comparator Voltage Reference Enable bit
+    CVRCON = 0b10100101;
+    
+    
+    
     INTCON = 0b00000000;
+    
     //TRISIO = 0b00000000;  // Set port as input or output, 0 output, 1 input
     //GPIO = 0b00000000;    // Set value for ports
     
-    TRISA = 0b0000001;
-    TRISB = 0b0000000;
-    TRISC = 0b0000110;
-    TRISD = 0b0000001;
+    TRISA = 0b00001111;
+    TRISB = 0b00000000;
+    TRISC = 0b00000110;
+    TRISD = 0b00000001;
     
-    PORTA = 0b0000001;
-    PORTB = 0b0000000;
-    PORTC = 0b0000000;
-    PORTD = 0b0000000;
+    PORTA = 0b00000001;
+    PORTB = 0b00000000;
+    PORTC = 0b00000000;
+    PORTD = 0b00000000;
     
     // bit 0-2   - Prescaler Select bits (111 = 1:256, 110 = 1:128, 101 = 1:64, 100 = 1:32, 011 = 1:16, 010 = 1:8, 001 = 1:4, 000 = 1:2)
     // bit 3     - Prescaler Assignment bit (1 = TImer0 prescaler is NOT assigned, 0 = Timer0 prescaler is assigned)
@@ -126,8 +149,8 @@ void SYSTEM_Initialize()
     //Channel0PWM.Callback = Channel0PWM_cb;
     
     Channel0.isRunning = 0;
-    Channel0.stepTimer.Callback = Channel0Step_cb;
-    Channel0.pwmTimer.Callback = Channel0PWM_cb;
+    Channel0.stepTimer.Callback = Channel0Step_cb_hard;
+    Channel0.pwmTimer.Callback = Channel0PWM_cb_hard;
     
     //Channel0.stepTimer.Missing = Channel0.stepTimer.Value = 6000004;
 }
@@ -153,6 +176,12 @@ void SYSTEM_Initialize()
 
 void SYSTEM_Task() {
 
+            if (Channel0.pwmState == 2 && (Channel0.step == 3 || Channel0.step == 6)) {
+            //if (Channel0.pwmState == 2) {
+                if (C1OUT)
+                    POWERON = 1;
+            }    
+    
     TimerEvent_Tick();
     
     TimerEvent_Check(&Channel0.stepTimer);
@@ -259,33 +288,33 @@ void Channel0PWM_cb() {
                     break;
                 case 1:
                 case 4:
-                    ADCON0 = 0b00000001;   // channel C - set the AN0 port and start the capacitor
+                    //ADCON0 = 0b00000001;   // channel C - set the AN0 port and start the capacitor
                     break;
             }
             break;
         case 2:
             Channel0.pwmTimer.Missing = Channel0.pwmOnAfterAdc;
             
-            if (Channel0.step == 1 || Channel0.step == 3) {
-            ADCON0bits.GO_DONE = 1;
-            while (ADCON0bits.GO_DONE);
+            //if (Channel0.step == 1 || Channel0.step == 3) {
+            //ADCON0bits.GO_DONE = 1;
+            //while (ADCON0bits.GO_DONE);
             
-            ADCON0 = 0b00000000;
+            //ADCON0 = 0b00000000;
             
-            unsigned char count = Channel0.adcValues[0];
+            //unsigned char count = Channel0.adcValues[0];
             
-            if (count == 31) {
-                memset(Channel0.adcValues, 0, 64);
-                Channel0.adcValues[1] = ADRESL;
-                Channel0.adcValues[2] = ADRESH;
-                Channel0.adcValues[0] = 1;
-            }
-            else {
-                Channel0.adcValues[(count * 2) + 1] = ADRESL;
-                Channel0.adcValues[(count * 2) + 2] = ADRESH;
-                Channel0.adcValues[0] = ++count;
-            }
-            }
+            //if (count == 31) {
+                //memset(Channel0.adcValues, 0, 64);
+                //Channel0.adcValues[1] = ADRESL;
+                //Channel0.adcValues[2] = ADRESH;
+                //Channel0.adcValues[0] = 1;
+            //}
+            //else {
+                //Channel0.adcValues[(count * 2) + 1] = ADRESL;
+                //Channel0.adcValues[(count * 2) + 2] = ADRESH;
+                //Channel0.adcValues[0] = ++count;
+            //}
+            //}
             break;
         case 3:
             Channel0SetHighValue();
@@ -308,6 +337,96 @@ void Channel0SetHighValue() {
         case 5:
         case 6:
             PHASECH = Channel0.pwmState != 3;
+            break;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void Channel0Step_cb_hard() {
+    Channel0SetValue_hard(0);
+    
+    if (!Channel0.isRunning)
+        return;
+    
+    if (Channel0.isFoward) {
+        if (Channel0.step == 6)
+            Channel0.step = 1;
+        else
+            Channel0.step++;
+    }
+    else {
+        if (Channel0.step <= 1)
+            Channel0.step = 6;
+        else
+            Channel0.step--;
+    }
+
+    Channel0SetValue_hard(Channel0.pwmState != 3);
+    
+    if (Channel0.isOneStep) {
+        Channel0.isRunning = 0;
+        Channel0.isOneStep = 0;
+    }
+}
+
+void Channel0PWM_cb_hard() {
+    Channel0.pwmState += 1;
+    
+    switch (Channel0.pwmState) {
+        case 1:
+            Channel0SetValue_hard(1);
+            Channel0.pwmTimer.Missing = Channel0.pwmOnBeforeAdc;
+            break;
+        case 2:
+            Channel0.pwmTimer.Missing = Channel0.pwmOnAfterAdc;
+            break;
+        case 3:
+            Channel0SetValue_hard(0);
+            Channel0.pwmTimer.Missing = Channel0.pwmOff;
+            Channel0.pwmState = 0;
+            break;
+    }
+}
+
+void Channel0SetValue_hard(unsigned char value) {
+    switch(Channel0.step) {
+        case 1:
+            PHASEAH = value;
+            PHASEBL = value;
+            break;
+        case 2:
+            PHASEAH = value;
+            PHASECL = value;
+            break;
+        case 3:
+            PHASEBH = value;
+            PHASECL = value;
+            break;
+        case 4:
+            PHASEBH = value;
+            PHASEAL = value;
+            break;
+        case 5:
+            PHASECH = value;
+            PHASEAL = value;
+            break;
+        case 6:
+            PHASECH = value;
+            PHASEBL = value;
             break;
     }
 }

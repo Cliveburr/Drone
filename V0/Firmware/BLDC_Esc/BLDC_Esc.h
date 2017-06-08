@@ -25,6 +25,13 @@ union ULongConvertion {
    unsigned char bytes[4];
 };
 
+enum ChannelMode {
+    CM_Manual = 0,
+    CM_Automatic = 1,
+    CM_StartingAutomatic = 2,
+    CM_RunningAutomatic = 3,
+    CM_StopingAutomatic = 4
+};
 
 struct ChannelStruct {
     unsigned char step;
@@ -38,6 +45,7 @@ struct ChannelStruct {
     unsigned int pwmOff;
     struct TimerEventStruct pwmTimer;
     unsigned char adcValues[64];
+    enum ChannelMode mode;
 };
 
 struct ChannelStruct Channel0;

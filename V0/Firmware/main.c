@@ -20,9 +20,10 @@ void main(void) {
 
     //while(1)
     //{
-    //    LATBbits.LATB2 = PORTBbits.RB2 ^ 1;
-    //    //POWERON ^= 1;
-    //    t_delay_10ms(100);
+        //LATBbits.LATB2 = PORTBbits.RB2 ^ 1;
+        //POWERON ^= 1;
+        //t_delay_10ms(10);
+        //POWERON = C1OUT;
     //}
     
     while(1)

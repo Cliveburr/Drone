@@ -6,12 +6,10 @@
             <file>file:/F:/Git/Drone/V0/Firmware/BLDC_Esc/BLDC_Esc.c</file>
             <file>file:/F:/Git/Drone/V0/Firmware/system.h</file>
             <file>file:/F:/Git/Drone/V0/Firmware/system.c</file>
-            <file>file:/F:/Git/Drone/V0/Firmware/USB_Config/usb_descriptors.c</file>
             <file>file:/F:/Git/Drone/V0/Firmware/BLDC_Esc/BLDC_Esc_User.h</file>
             <file>file:/F:/Git/Drone/V0/Firmware/main.c</file>
             <file>file:/F:/Git/Drone/V0/Firmware/USB_Config/usb_app.c</file>
             <file>file:/F:/Git/Drone/V0/Firmware/BLDC_Esc/BLDC_Esc.h</file>
-            <file>file:/F:/Git/Drone/V0/Firmware/LEDRgb/LedControl.c</file>
         </group>
     </open-files>
 </project-private>
