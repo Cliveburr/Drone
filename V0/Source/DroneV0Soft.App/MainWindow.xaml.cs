@@ -29,6 +29,8 @@ namespace DroneV0Soft.App
 
         public MainWindow()
         {
+            var a = new MicroTimerEvent();
+
             InitializeComponent();
 
             _device = new Device();
@@ -195,7 +197,7 @@ namespace DroneV0Soft.App
             var tick_step_bytes = BitConverter.GetBytes(tick_step);
 
             var msg = new byte[] { 3, tick_step_bytes[0], tick_step_bytes[1], tick_step_bytes[2], tick_step_bytes[3] };
-            _device.SendMessage(msg);
+            //_device.SendMessage(msg);
 
             var onestepperiodinus = (period / steps * 1000000);
 
@@ -316,7 +318,7 @@ namespace DroneV0Soft.App
                 pwmonafteradc_bytes[0], pwmonafteradc_bytes[1], pwmonafteradc_bytes[2], pwmonafteradc_bytes[3],
                 pwmoff_bytes[0], pwmoff_bytes[1], pwmoff_bytes[2], pwmoff_bytes[3]
             };
-            _device.SendMessage(msg);
+            //_device.SendMessage(msg);
 
             var pwmperiodus = pwmperiod * 1000000;
             var onvaluebeforeadcus = onvaluebeforeadc * timer_value * 1000000;

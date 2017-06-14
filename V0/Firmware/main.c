@@ -16,7 +16,6 @@ void main(void) {
     POWERON = 0;
 
     USBDeviceInit();
-    //LedControl_Init();
 
     //while(1)
     //{

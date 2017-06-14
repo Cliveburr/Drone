@@ -4,17 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9CA42678-5131-4770-BB9A-6B3C861058B8}</ProjectGuid>
+    <ProjectGuid>{0FB8DC9F-E077-4452-B35A-B937CFC5CFCD}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DroneV0Soft.App</RootNamespace>
-    <AssemblyName>DroneV0Soft.App</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <RootNamespace>DroneDesigner</RootNamespace>
+    <AssemblyName>DroneDesigner</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -52,34 +51,57 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
+    <Page Include="Controls\AmpereControl.xaml">
       <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Compile Include="MicroTimerEvent.cs" />
-    <Compile Include="VirtualMotor.cs" />
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\AmperePerHourControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\VoltageControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
+    <Compile Include="Controls\AmpereControl.xaml.cs">
+      <DependentUpon>AmpereControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Device.cs" />
+    <Compile Include="Controls\AmperePerHourControl.xaml.cs">
+      <DependentUpon>AmperePerHourControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\VoltageControl.xaml.cs">
+      <DependentUpon>VoltageControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="ProbeWindow.xaml">
+    <Page Include="Pages\MainPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Parts\Editor\GenericLiPoBatteryEditorPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ProbeWindow.xaml.cs">
-      <DependentUpon>ProbeWindow.xaml</DependentUpon>
+    <Compile Include="Measure\Ampere.cs" />
+    <Compile Include="Measure\AmperePerHour.cs" />
+    <Compile Include="Measure\Voltage.cs" />
+    <Compile Include="Pages\MainPage.xaml.cs">
+      <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Parts\Editor\GenericLiPoBatteryEditorPage.xaml.cs">
+      <DependentUpon>GenericLiPoBatteryEditorPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Parts\GenericLiPoBattery.cs" />
+    <Compile Include="Parts\PartBase.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -102,19 +124,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\AutoHome\Communication\USB\Library\UsbHidLibrary\UsbHidLibrary.csproj">
-      <Project>{733b8d65-3baf-4608-ae81-2ce14ca06805}</Project>
-      <Name>UsbHidLibrary</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\NativeNET\NativeNET\NativeNET.csproj">
-      <Project>{435ac815-9d77-4f2b-a751-10393e05de89}</Project>
-      <Name>NativeNET</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

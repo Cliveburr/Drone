@@ -1,0 +1,23 @@
+﻿<Window x:Class="DroneDesigner.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DroneDesigner"
+        xmlns:ctr="clr-namespace:DroneDesigner.Controls"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="467" Width="810" Closed="Window_Closed">
+    <Grid>
+        <DockPanel>
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="_File">
+                    <MenuItem Header="_Open"/>
+                    <MenuItem Header="_Close"/>
+                    <MenuItem Header="_Save"/>
+                </MenuItem>
+            </Menu>
+            <ctr:AmperePerHourControl Margin="3" DockPanel.Dock="Top" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch"></ctr:AmperePerHourControl>
+            <Frame x:Name="mainFrame"></Frame>
+        </DockPanel>
+    </Grid>
+</Window>

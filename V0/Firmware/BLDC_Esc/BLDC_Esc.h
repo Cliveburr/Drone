@@ -2,41 +2,30 @@
 #define	BLDC_ESC_H
 
 #include "BLDC_Esc_User.h"
+#include "Timer_Events.h"
 
-unsigned short TimerLastValue = 0;
-unsigned short TimerActualValue = 0;
-unsigned short TimerDiffValue = 0;
-
-typedef void (*TimerEventCallback)();
-
-struct TimerEventStruct {
-    unsigned long Value;
-    unsigned long Missing;
-    TimerEventCallback Callback;
-};
-
-void TimerEvent_Tick();
-
-void TimerEvent_Check(struct TimerEventStruct *timer);
-
-
-union ULongConvertion {
-   unsigned long value;
+union UInt32Convertion {
+   unsigned int value;
    unsigned char bytes[4];
 };
 
 enum ChannelMode {
     CM_Manual = 0,
-    CM_Automatic = 1,
-    CM_StartingAutomatic = 2,
-    CM_RunningAutomatic = 3,
-    CM_StopingAutomatic = 4
+    CM_Automatic = 1
+};
+
+enum ChannelState {
+    CS_ManualOff = 0,
+    CS_ManualOn = 1,
+    CS_Automatic_Off = 2,
+    CS_AutomaticStarting = 3,
+    CS_AutomaticRunning = 4,
+    CS_AutomaticStoping = 5
 };
 
 struct ChannelStruct {
     unsigned char step;
     unsigned char isFoward;
-    unsigned char isRunning;
     unsigned char isOneStep;
     struct TimerEventStruct stepTimer;
     unsigned char pwmState;
@@ -46,8 +35,22 @@ struct ChannelStruct {
     struct TimerEventStruct pwmTimer;
     unsigned char adcValues[64];
     enum ChannelMode mode;
+    enum ChannelState state;
+    unsigned char isCrossZero;
+    unsigned char crossZeroCount;
+    struct TimerEventCounter stepLengthCounter;
 };
 
+unsigned char CrossZeroDef;
+unsigned int AutomaticStartValue;
+unsigned char AutomaticStartInc;
+
 struct ChannelStruct Channel0;
+
+void BLDC_Esc_Initialize();
+
+void BLDC_Esc_Task();
+
+void BLDC_Esc_Tick(struct ChannelStruct *channel);
 
 #endif	/* BLDC_ESC */

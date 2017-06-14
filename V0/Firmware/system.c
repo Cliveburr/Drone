@@ -141,52 +141,13 @@ void SYSTEM_Initialize()
     // bit 7     - Timer0 On/Off Control bit (1 = Enabled, 0 = Disabled)
     T0CON = 0b10001011;
     
-    //test1.Value = 46875;
-    //test1.Missing = test1.Value = 6000004; //144000;
-    //test1.Callback = test1_cb;
-    
-    //Channel0PWM.Missing = Channel0PWM.Value = 0;
-    //Channel0PWM.Callback = Channel0PWM_cb;
-    
-    Channel0.isRunning = 0;
-    Channel0.stepTimer.Callback = Channel0Step_cb_hard;
-    Channel0.pwmTimer.Callback = Channel0PWM_cb_hard;
-    
-    //Channel0.stepTimer.Missing = Channel0.stepTimer.Value = 6000004;
+    BLDC_Esc_Initialize();
 }
-
-// 65,535
-// 48Mhz = 48.000.000hz / 4 = 12.000.000hz = 83,33ns
-// Preescale 256 * 83,33ns = 21.333,33ns = 21,33us
-// Preescale 128 * 83,33ns = 10.666,66ns = 10,66us
-// Preescale 16 * 83,33ns = 1.333,33ns = 1,333us
-// Timer0 8-bit = 256 * 21,33us = 35.460,48us = 35,46ms
-// Timer0 16-bit - Preescale 128 - Maximum idle time = 65535 * 10,66us = 698.603,10us = 698,60ms
-
-// 128 preescale 1s = 1.000.000us / 10,66us = 93750
-// 16 preescale 1s = 1.000.000us / 1,33us = 750000
-// 0 preescale 12000004
-
-// 500rpm / 60 =  8,333hz = 0,12s = 120ms
-// 120ms = 120.000us / 0,08333us = 144000
-
-// 10khz = 0,0001s = 0,1ms = 100us
-// 16pre = 100us / 1,33us = 75
-// 0pre = 100us / 0,08333us = 1200
 
 void SYSTEM_Task() {
 
-            if (Channel0.pwmState == 2 && (Channel0.step == 3 || Channel0.step == 6)) {
-            //if (Channel0.pwmState == 2) {
-                if (C1OUT)
-                    POWERON = 1;
-            }    
-    
-    TimerEvent_Tick();
-    
-    TimerEvent_Check(&Channel0.stepTimer);
-    
-    TimerEvent_Check(&Channel0.pwmTimer);
+    BLDC_Esc_Task();
+
 }
 
 
@@ -356,77 +317,3 @@ void Channel0SetHighValue() {
 
 
 
-void Channel0Step_cb_hard() {
-    Channel0SetValue_hard(0);
-    
-    if (!Channel0.isRunning)
-        return;
-    
-    if (Channel0.isFoward) {
-        if (Channel0.step == 6)
-            Channel0.step = 1;
-        else
-            Channel0.step++;
-    }
-    else {
-        if (Channel0.step <= 1)
-            Channel0.step = 6;
-        else
-            Channel0.step--;
-    }
-
-    Channel0SetValue_hard(Channel0.pwmState != 3);
-    
-    if (Channel0.isOneStep) {
-        Channel0.isRunning = 0;
-        Channel0.isOneStep = 0;
-    }
-}
-
-void Channel0PWM_cb_hard() {
-    Channel0.pwmState += 1;
-    
-    switch (Channel0.pwmState) {
-        case 1:
-            Channel0SetValue_hard(1);
-            Channel0.pwmTimer.Missing = Channel0.pwmOnBeforeAdc;
-            break;
-        case 2:
-            Channel0.pwmTimer.Missing = Channel0.pwmOnAfterAdc;
-            break;
-        case 3:
-            Channel0SetValue_hard(0);
-            Channel0.pwmTimer.Missing = Channel0.pwmOff;
-            Channel0.pwmState = 0;
-            break;
-    }
-}
-
-void Channel0SetValue_hard(unsigned char value) {
-    switch(Channel0.step) {
-        case 1:
-            PHASEAH = value;
-            PHASEBL = value;
-            break;
-        case 2:
-            PHASEAH = value;
-            PHASECL = value;
-            break;
-        case 3:
-            PHASEBH = value;
-            PHASECL = value;
-            break;
-        case 4:
-            PHASEBH = value;
-            PHASEAL = value;
-            break;
-        case 5:
-            PHASECH = value;
-            PHASEAL = value;
-            break;
-        case 6:
-            PHASECH = value;
-            PHASEBL = value;
-            break;
-    }
-}
