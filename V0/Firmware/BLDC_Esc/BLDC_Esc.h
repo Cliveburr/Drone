@@ -4,10 +4,15 @@
 #include "BLDC_Esc_User.h"
 #include "Timer_Events.h"
 
-union UInt32Convertion {
+union UInt16ConvertionUnion {
    unsigned int value;
+   unsigned char bytes[2];
+} UInt16Convertion;
+
+union ULong32ConvertionUnion {
+   unsigned long value;
    unsigned char bytes[4];
-};
+} ULong32Convertion;
 
 enum ChannelMode {
     CM_Manual = 0,
@@ -45,12 +50,22 @@ unsigned char CrossZeroDef;
 unsigned int AutomaticStartValue;
 unsigned char AutomaticStartInc;
 
-struct ChannelStruct Channel0;
+struct ChannelStruct BLDC_Esc_Channels[4];
 
 void BLDC_Esc_Initialize();
 
 void BLDC_Esc_Task();
 
 void BLDC_Esc_Tick(struct ChannelStruct *channel);
+
+void CrossZeroEvent(struct ChannelStruct *channel);
+
+void BLDC_Esc_SetManual(unsigned char index);
+
+void BLDC_Esc_SetManualOn(unsigned char index);
+
+void BLDC_Esc_SetAutomatic(unsigned char index);
+
+void BLDC_Esc_SetAutomaticStart(unsigned char index);
 
 #endif	/* BLDC_ESC */

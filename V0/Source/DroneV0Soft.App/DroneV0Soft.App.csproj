@@ -52,26 +52,35 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
     <Compile Include="MicroTimerEvent.cs" />
+    <Compile Include="Motor\ChannelModeEnum.cs" />
+    <Compile Include="Motor\ChannelStateEnum.cs" />
+    <Compile Include="Motor\Message\ChannelChangeMode.cs" />
+    <Compile Include="Motor\Message\ChannelInfo.cs" />
+    <Compile Include="Motor\Message\IMessageResponse.cs" />
+    <Compile Include="Motor\Message\IMessageRequest.cs" />
+    <Compile Include="Motor\Message\MessageIndexEnum.cs" />
+    <Compile Include="Motor\MotorController.cs" />
+    <Compile Include="Motor\Transport\ITransport.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="VirtualMotor.cs" />
-    <Page Include="MainWindow.xaml">
+    <Compile Include="Windows\MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Windows\MotorWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Device.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Include="Motor\Transport\UsbTransport.cs" />
+    <Compile Include="Windows\MotorWindow.xaml.cs">
+      <DependentUpon>MotorWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Page Include="ProbeWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\MainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

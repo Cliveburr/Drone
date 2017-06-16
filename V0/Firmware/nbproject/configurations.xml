@@ -7,10 +7,7 @@
       <logicalFolder name="f4" displayName="BLDC_Esc" projectFiles="true">
         <itemPath>BLDC_Esc/BLDC_Esc.h</itemPath>
         <itemPath>BLDC_Esc/BLDC_Esc_User.h</itemPath>
-      </logicalFolder>
-      <logicalFolder name="f3" displayName="LEDRgb" projectFiles="true">
-        <itemPath>LEDRgb/LedControl.h</itemPath>
-        <itemPath>LEDRgb/LedControl_Config.h</itemPath>
+        <itemPath>BLDC_Esc/Timer_Events.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="USB_Config" projectFiles="true">
         <itemPath>USB_Config/fixed_address_memory.h</itemPath>
@@ -39,9 +36,7 @@
                    projectFiles="true">
       <logicalFolder name="f4" displayName="BLDC_Esc" projectFiles="true">
         <itemPath>BLDC_Esc/BLDC_Esc.c</itemPath>
-      </logicalFolder>
-      <logicalFolder name="f3" displayName="LEDRgb" projectFiles="true">
-        <itemPath>LEDRgb/LedControl.c</itemPath>
+        <itemPath>BLDC_Esc/Timer_Events.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="USB_Config" projectFiles="true">
         <itemPath>USB_Config/usb_descriptors.c</itemPath>

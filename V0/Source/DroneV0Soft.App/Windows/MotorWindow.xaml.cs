@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DroneV0Soft.App.Motor;
+using DroneV0Soft.App.Motor.Transport;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,28 +17,34 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Xml.Serialization;
 
-namespace DroneV0Soft.App
+namespace DroneV0Soft.App.Windows
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MotorWindow : Window
     {
-        private Device _device;
+        private int _index;
+        private MotorController _motor;
         private Timer _timer;
         private ProbeWindow _probeWindow;
         private bool _afterIni = false;
 
-        public MainWindow()
+        public MotorWindow(int index)
         {
-            var a = new MicroTimerEvent();
+            _index = index;
+            Title += _index;
 
             InitializeComponent();
 
-            _device = new Device();
-            _device.OnMessageReceive += _device_OnMessageReceive;
+            //_device = new Device();
+            //_device.OnMessageReceive += _device_OnMessageReceive;
+            _motor = new MotorController();
+            _motor.Transport = new UsbTransport();
 
             _afterIni = true;
+
+            //GetChannelInfo();
             //_timer = new Timer();
             //_timer.Elapsed += _timer_Elapsed;
             //_timer.Interval = 100;
@@ -53,36 +61,98 @@ namespace DroneV0Soft.App
             //     .Select(p => new { Value = p });
         }
 
-        private void UISafe(Action action)
+        private async void GetChannelInfo()
         {
             try
             {
-                action();
+                var info = await _motor.GetChannelInfo(_index);
+
+                if (info.ChannelMode == ChannelModeEnum.CM_Manual)
+                {
+                    tabControl.SelectedIndex = 0;
+                }
+                else
+                {
+                    tabControl.SelectedIndex = 1;
+                }
             }
             catch (Exception err)
             {
-                MessageBox.Show(err.ToString());
+                Program.ErrorHandler(err);
             }
         }
 
-        private void _device_OnMessageReceive(byte[] msg)
+        private async void tabControlManual_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (msg.Length == 0)
-                return;
-
-            switch (msg[0])
+            try
             {
-                case 1: label.Content = "press"; break;
-                case 2: label.Content = ""; break;
+                await _motor.ChannelChangeMode(_index, ChannelModeEnum.CM_Manual);
+            }
+            catch (Exception err)
+            {
+                e.Handled = true;
+
+                Program.ErrorHandler(err);
             }
         }
+
+        private async void tabControlAutomatic_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                await _motor.ChannelChangeMode(_index, ChannelModeEnum.CM_Automatic);
+            }
+            catch (Exception err)
+            {
+                e.Handled = true;
+
+                Program.ErrorHandler(err);
+            }
+        }
+
+        private void tgbOnOff_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void UISafe(Func<Task> action)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                try
+                {
+                    action();
+                }
+                catch (AggregateException aggErr)
+                {
+                    var err = aggErr.InnerExceptions.First();
+                    Program.ErrorHandler(err);
+                }
+                catch (Exception err)
+                {
+                    Program.ErrorHandler(err);
+                }
+            });
+        }
+
+        //private void _device_OnMessageReceive(byte[] msg)
+        //{
+        //    if (msg.Length == 0)
+        //        return;
+
+        //    switch (msg[0])
+        //    {
+        //        case 1: label.Content = "press"; break;
+        //        case 2: label.Content = ""; break;
+        //    }
+        //}
 
         private void button_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 var msg = new byte[] { 1 };
-                _device.SendMessage(msg);
+                //_device.SendMessage(msg);
             }
             catch (Exception err)
             {
@@ -92,61 +162,61 @@ namespace DroneV0Soft.App
 
         private const double adc = 0.0048828125;   // 5 / 1023
 
-        private async void _timer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            _timer.Stop();
-            try
-            {
-                var msg = new byte[] { 2 };
-                var read = await _device.WriteAndRead(msg);
+        //private async void _timer_Elapsed(object sender, ElapsedEventArgs e)
+        //{
+        //    _timer.Stop();
+        //    try
+        //    {
+        //        var msg = new byte[] { 2 };
+        //        var read = await _device.WriteAndRead(msg);
 
-                Dispatcher.Invoke(() =>
-                {
+        //        Dispatcher.Invoke(() =>
+        //        {
 
-                    // read[0] = 0000 0011
-                    // read[1] = 1111 1111
+        //            // read[0] = 0000 0011
+        //            // read[1] = 1111 1111
 
-                    //var text = $"low: {read[0]}, high: {read[1]}";
-                    var value = (read[1] << 8) | (read[0]);
-                    var volt = value * adc;
+        //            //var text = $"low: {read[0]}, high: {read[1]}";
+        //            var value = (read[1] << 8) | (read[0]);
+        //            var volt = value * adc;
 
-                    // VADC_in = (VREF +−VREF−)⋅n212−1 + VREF−
-                    //var tt = (5 - 0) * (value / ((2 ^ 10) - 1)) + 5;
+        //            // VADC_in = (VREF +−VREF−)⋅n212−1 + VREF−
+        //            //var tt = (5 - 0) * (value / ((2 ^ 10) - 1)) + 5;
 
-                    label.Content = $"volt: {volt.ToString("#.000000")}V";
-                    //switch (read[0])
-                    //{
-                    //    case 1: label.Content = "press"; break;
-                    //    case 0: label.Content = ""; break;
-                    //}
-                });
-            }
-            catch (Exception err)
-            {
-            }
-            _timer.Start();
-        }
+        //            label.Content = $"volt: {volt.ToString("#.000000")}V";
+        //            //switch (read[0])
+        //            //{
+        //            //    case 1: label.Content = "press"; break;
+        //            //    case 0: label.Content = ""; break;
+        //            //}
+        //        });
+        //    }
+        //    catch (Exception err)
+        //    {
+        //    }
+        //    _timer.Start();
+        //}
 
-        private void Probe_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (_probeWindow == null)
-                {
-                    _probeWindow = new ProbeWindow(_device);
-                    _probeWindow.Closed += (object sender2, EventArgs e2) => { _probeWindow = null; };
-                    _probeWindow.Show();
-                }
-                else
-                {
-                    _probeWindow.Activate();
-                }
-            }
-            catch (Exception err)
-            {
-                MessageBox.Show(err.ToString());
-            }
-        }
+        //private void Probe_Click(object sender, RoutedEventArgs e)
+        //{
+        //    try
+        //    {
+        //        if (_probeWindow == null)
+        //        {
+        //            _probeWindow = new ProbeWindow(_device);
+        //            _probeWindow.Closed += (object sender2, EventArgs e2) => { _probeWindow = null; };
+        //            _probeWindow.Show();
+        //        }
+        //        else
+        //        {
+        //            _probeWindow.Activate();
+        //        }
+        //    }
+        //    catch (Exception err)
+        //    {
+        //        MessageBox.Show(err.ToString());
+        //    }
+        //}
 
         const double timer_value = 0.00000008333333333;
 
@@ -155,7 +225,7 @@ namespace DroneV0Soft.App
             if (!_afterIni)
                 return;
 
-            UISafe(() =>
+            UISafe(async () =>
             {
                 SendStepRPMValueChange();
             });
@@ -166,7 +236,7 @@ namespace DroneV0Soft.App
             if (e.Key != Key.Enter)
                 return;
 
-            UISafe(() =>
+            UISafe(async  () =>
             {
                 SendStepRPMValueChange();
             });
@@ -177,7 +247,7 @@ namespace DroneV0Soft.App
             if (e.Key != Key.Enter)
                 return;
 
-            UISafe(() =>
+            UISafe(async () =>
             {
                 var rpmMax = int.Parse(tbRPMmax.Text);
                 slStepRPM.Maximum = rpmMax;
@@ -210,10 +280,10 @@ namespace DroneV0Soft.App
         {
             var value = tgbCClock.IsChecked ?? false ? 1 : 0;
 
-            UISafe(() =>
+            UISafe(async () =>
             {
                 var msg = new byte[] { 5, (byte)value };
-                _device.SendMessage(msg);
+                //_device.SendMessage(msg);
             });
         }
 
@@ -221,19 +291,19 @@ namespace DroneV0Soft.App
         {
             var value = tglRunning.IsChecked ?? false ? 1 : 0;
 
-            UISafe(() =>
+            UISafe(async () =>
             {
                 var msg = new byte[] { 7, (byte)value };
-                _device.SendMessage(msg);
+                //_device.SendMessage(msg);
             });
         }
 
         public void btOneStep_Click(object sender, RoutedEventArgs e)
         {
-            UISafe(() =>
+            UISafe(async () =>
             {
                 var msg = new byte[] { 8 };
-                _device.SendMessage(msg);
+                //_device.SendMessage(msg);
             });
         }
 
@@ -242,7 +312,7 @@ namespace DroneV0Soft.App
             if (e.Key != Key.Enter)
                 return;
 
-            UISafe(() =>
+            UISafe(async () =>
             {
                 SendPWMValuesChange();
             });
@@ -265,7 +335,7 @@ namespace DroneV0Soft.App
             if (!_afterIni)
                 return;
 
-            UISafe(() =>
+            UISafe(async () =>
             {
                 SendPWMValuesChange();
             });
@@ -289,7 +359,7 @@ namespace DroneV0Soft.App
             if (!_afterIni)
                 return;
 
-            UISafe(() =>
+            UISafe(async () =>
             {
                 SendPWMValuesChange();
             });

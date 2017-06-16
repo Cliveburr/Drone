@@ -21,7 +21,7 @@ void TimerEvent_Tick() {
 }
 
 void TimerEvent_Check(struct TimerEventStruct *timer) {
-    if (timer.enabled) {
+    if (timer->enabled) {
         if (TimerDiffValue >= timer->missing) {
             timer->missing = timer->value - (TimerDiffValue - timer->missing);
             timer->callback();

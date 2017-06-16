@@ -7,14 +7,10 @@
 
 #include "fixed_address_memory.h"
 
-//#include "LedControl.h"
-
 #define POWERON PORTBbits.RB2
 #define USBSTATE PORTBbits.RB5
 #define USBGETSIGNAL PORTCbits.RC2
 #define BUTTON PORTCbits.RC1
-
-char agoravai;
 
 #define _XTAL_FREQ 48000000
 

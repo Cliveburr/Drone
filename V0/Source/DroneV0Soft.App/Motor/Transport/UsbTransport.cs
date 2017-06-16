@@ -3,22 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DroneV0Soft.App.Motor.Message;
 using UsbHidLibrary;
 
-namespace DroneV0Soft.App
+namespace DroneV0Soft.App.Motor.Transport
 {
-    public class Device : IDisposable
+    public class UsbTransport : IDisposable, ITransport
     {
         public delegate void OnMessageReceiveDelegate(byte[] msg);
         public event OnMessageReceiveDelegate OnMessageReceive;
-        public bool IsConnected { get; private set; }
 
         private const int _vendorId = 0x1781;
         private const int _productId = 0x07D0;
         private HidDevice _device;
         private UsbMonitor _monitor;
 
-        public Device()
+        public UsbTransport()
         {
             _monitor = new UsbMonitor();
             _monitor.UsbChangeEventArrival += new UsbMonitor.UsbChangeEventHandler(monitor_Arrival);
@@ -42,7 +42,6 @@ namespace DroneV0Soft.App
                     return;
 
                  _device = connected;
-                IsConnected = true;
             }
         }
 
@@ -62,7 +61,6 @@ namespace DroneV0Soft.App
 
                 _device.Dispose();
                 _device = null;
-                IsConnected = false;
             }
         }
 
@@ -73,22 +71,29 @@ namespace DroneV0Soft.App
                 _device.Dispose();
         }
 
-        public bool SendMessage(byte[] msg)
+        private void CheckConnected()
         {
-            if (!IsConnected)
+            if (_device == null)
+            {
+                monitor_Arrival();
+            }
+
+            if (_device == null)
             {
                 throw new Exception("Device not found!");
             }
-
-            return _device.Write(msg) > 0;
         }
 
-        public async Task<byte[]> WriteAndRead(byte[] msg)
+        private void Write(byte[] msg)
         {
-            if (!IsConnected)
-            {
-                throw new Exception("Device not found!");
-            }
+            CheckConnected();
+
+            _device.Write(msg);
+        }
+
+        private async Task<byte[]> WriteAndRead(byte[] msg)
+        {
+            CheckConnected();
 
             var writed = _device.Write(msg);
             if (writed == 0)
@@ -106,6 +111,29 @@ namespace DroneV0Soft.App
             {
                 throw readed.Error;
             }
+        }
+
+        public async void SendMessage(IMessageRequest request)
+        {
+            var bytesRequest = request.GetBytes();
+
+            await Task.Run(() =>
+            {
+                Write(bytesRequest);
+            });
+        }
+
+        public async Task<T> SendMessageWithResonse<T>(IMessageRequest request) where T : IMessageResponse
+        {
+            var bytesRequest = request.GetBytes();
+
+            var bytesResponse = await WriteAndRead(bytesRequest);
+
+            var response = Activator.CreateInstance<T>();
+
+            response.Parse(bytesResponse);
+
+            return response;
         }
     }
 }

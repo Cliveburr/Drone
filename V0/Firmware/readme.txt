@@ -1,4 +1,9 @@
 
+C Data Types
+
+unsigned int = 2 bytes = 16bits
+unsigned long = 4 bytes = 32bits
+
 char = 1 byte = 8bits
 short = 2 byte = 16bits
 int = 4 byte = 32bits

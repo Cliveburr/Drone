@@ -70,6 +70,7 @@
 // CONFIG7H
 #pragma config EBTRB = OFF      // Boot Block Table Read Protection bit (Boot block (000000-0007FFh) is not protected from table reads executed in other blocks)
 
+/*
 void Channel0Step_cb();
 void Channel0PWM_cb();
 void Channel0SetHighValue();
@@ -77,6 +78,7 @@ void Channel0SetHighValue();
 void Channel0Step_cb_hard();
 void Channel0PWM_cb_hard();
 void Channel0SetValue_hard(unsigned char value);
+ */
 
 void SYSTEM_Initialize()
 {
@@ -146,11 +148,11 @@ void SYSTEM_Initialize()
 
 void SYSTEM_Task() {
 
-    BLDC_Esc_Task();
+    //BLDC_Esc_Task();
 
 }
 
-
+/*
 void Channel0Step_cb() {
     //POWERON ^= 1;
     
@@ -303,17 +305,6 @@ void Channel0SetHighValue() {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+*/
 
 
