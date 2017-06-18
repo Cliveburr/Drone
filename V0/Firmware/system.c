@@ -148,7 +148,7 @@ void SYSTEM_Initialize()
 
 void SYSTEM_Task() {
 
-    //BLDC_Esc_Task();
+    BLDC_Esc_Task();
 
 }
 

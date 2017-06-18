@@ -24,6 +24,8 @@ namespace DroneV0Soft.App.Windows
     /// </summary>
     public partial class MotorWindow : Window
     {
+        const double timer_value = 0.00000008333333333;
+
         private int _index;
         private MotorController _motor;
         private Timer _timer;
@@ -40,11 +42,13 @@ namespace DroneV0Soft.App.Windows
             //_device = new Device();
             //_device.OnMessageReceive += _device_OnMessageReceive;
             _motor = new MotorController();
-            _motor.Transport = new UsbTransport();
 
-            _afterIni = true;
+            var usbTransport = new UsbTransport();
+            usbTransport.OnRemoved += () => Dispatcher.Invoke(() => Close());
+            _motor.Transport = usbTransport;
 
-            //GetChannelInfo();
+            GetChannelInfo(true);
+
             //_timer = new Timer();
             //_timer.Elapsed += _timer_Elapsed;
             //_timer.Interval = 100;
@@ -61,25 +65,48 @@ namespace DroneV0Soft.App.Windows
             //     .Select(p => new { Value = p });
         }
 
-        private async void GetChannelInfo()
+        private async void GetChannelInfo(bool closeIfError = false)
         {
             try
             {
                 var info = await _motor.GetChannelInfo(_index);
 
-                if (info.ChannelMode == ChannelModeEnum.CM_Manual)
+                if (info.Mode == ChannelModeEnum.CM_Manual)
                 {
                     tabControl.SelectedIndex = 0;
+
+                    tgbManualOnOff.IsChecked = info.State == ChannelStateEnum.CS_ManualOn;
+
+
+                    var steps = int.Parse(tbManualSteps.Text);
+                    var tick = info.StepTimerValue * steps;
+                    var period = tick * timer_value;
+                    var value = period * 60;
+
+                    slManualStepRPM.Value = value;
+
+                    lbManualRPMlabel.Content = $"RPM: {value.ToString("0")}";
+                    lbManualRPMdisplay.Content = $"RPM tick: {tick.ToString("#,##0.000")} - Step tick: {info.StepTimerValue.ToString("#,##0.000")}";
                 }
                 else
                 {
                     tabControl.SelectedIndex = 1;
+
+                    tgbAutoOnOff.IsChecked = info.State != ChannelStateEnum.CS_Automatic_Off;
                 }
             }
             catch (Exception err)
             {
                 Program.ErrorHandler(err);
+
+                if (closeIfError)
+                {
+                    IsEnabled = false;
+                    Close();
+                }
             }
+            SetManualGroups();
+            _afterIni = true;
         }
 
         private async void tabControlManual_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -110,11 +137,132 @@ namespace DroneV0Soft.App.Windows
             }
         }
 
-        private void tgbOnOff_Click(object sender, RoutedEventArgs e)
+        private async void tgbManualOnOff_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            try
+            {
+                var state = tgbManualOnOff.IsChecked ?? false ?
+                    ChannelStateEnum.CS_ManualOff :
+                    ChannelStateEnum.CS_ManualOn;
 
+                await _motor.ChannelChangeState(_index, state);
+            }
+            catch (Exception err)
+            {
+                e.Handled = true;
+
+                Program.ErrorHandler(err);
+            }
+            SetManualGroups(true);
         }
 
+        private void SetManualGroups(bool inverse = false)
+        {
+            grbManualStep.IsEnabled = tgbManualOnOff.IsChecked ?? false;
+            grbManualPwm.IsEnabled = tgbManualOnOff.IsChecked ?? false;
+
+            if (inverse)
+            {
+                grbManualStep.IsEnabled ^= true;
+                grbManualPwm.IsEnabled ^= true;
+            }
+        }
+
+        #region ChannelManualConfig
+        private void tgbManualDirection_Click(object sender, RoutedEventArgs e)
+        {
+            SendManualConfig(false);
+        }
+
+        public void btManualOneStep_Click(object sender, RoutedEventArgs e)
+        {
+            SendManualConfig(true);
+        }
+
+        private async void SendManualConfig(bool oneStep)
+        {
+            try
+            {
+                var direction = tgbManualDirection.IsChecked ?? false ? 1 : 0;
+                var oneStepByte = oneStep ? 1: 0;
+
+                await _motor.ChannelManualConfig(_index, (byte)direction, (byte)oneStepByte);
+            }
+            catch (Exception err)
+            {
+                Program.ErrorHandler(err);
+            }
+        }
+        #endregion
+
+        #region ChannelManualStep
+        private async void slManualStepRPM_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (!_afterIni)
+                return;
+
+            try
+            {
+                await SendManualStep();
+            }
+            catch (Exception err)
+            {
+                Program.ErrorHandler(err);
+            }
+        }
+
+        private async void tbManualSteps_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter)
+                return;
+
+            try
+            {
+                await SendManualStep();
+            }
+            catch (Exception err)
+            {
+                Program.ErrorHandler(err);
+            }
+        }
+
+        private void tbManualRPMmax_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Enter)
+                return;
+
+            try
+            {
+                var rpmMax = int.Parse(tbManualRPMmax.Text);
+                slManualStepRPM.Maximum = rpmMax;
+            }
+            catch (Exception err)
+            {
+                Program.ErrorHandler(err);
+            }
+        }
+
+        private async Task SendManualStep()
+        {
+            var steps = int.Parse(tbManualSteps.Text);
+            var value = slManualStepRPM.Value;
+
+            var hertz = value / 60;    // converte o rpm em hertz
+            var period = 1 / hertz;    // converte hertz para periodo
+            var tick = period / timer_value;     // calcula o valor do timer para o periodo
+            var tick_step = (uint)(tick / steps);    // divide entre os passos do motor
+
+            await _motor.ChannelManualStep(_index, tick_step);
+
+            var onestepperiodinus = (period / steps * 1000000);
+
+            lbManualRPMlabel.Content = $"RPM: {value.ToString("0")}";
+            lbManualRPMdisplay.Content = $"RPM tick: {tick.ToString("#,##0.000")} - Step tick: {tick_step.ToString("#,##0.000")}";
+            lbStepWidth.Content = $"{onestepperiodinus.ToString("#,##0.000")}us";
+        }
+        #endregion
+
+        #region old
         private void UISafe(Func<Task> action)
         {
             Dispatcher.Invoke(() =>
@@ -147,18 +295,18 @@ namespace DroneV0Soft.App.Windows
         //    }
         //}
 
-        private void button_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var msg = new byte[] { 1 };
-                //_device.SendMessage(msg);
-            }
-            catch (Exception err)
-            {
-                MessageBox.Show(err.ToString());
-            }
-        }
+        //private void button_Click(object sender, RoutedEventArgs e)
+        //{
+        //    try
+        //    {
+        //        var msg = new byte[] { 1 };
+        //        //_device.SendMessage(msg);
+        //    }
+        //    catch (Exception err)
+        //    {
+        //        MessageBox.Show(err.ToString());
+        //    }
+        //}
 
         private const double adc = 0.0048828125;   // 5 / 1023
 
@@ -217,105 +365,22 @@ namespace DroneV0Soft.App.Windows
         //        MessageBox.Show(err.ToString());
         //    }
         //}
+        #endregion
 
-        const double timer_value = 0.00000008333333333;
-
-        private void slStepRPM_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (!_afterIni)
-                return;
-
-            UISafe(async () =>
-            {
-                SendStepRPMValueChange();
-            });
-        }
-
-        private void tbSteps_KeyDown(object sender, KeyEventArgs e)
+        #region ChannelManualPWM
+        private async void tbManualPWMwidth_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key != Key.Enter)
                 return;
 
-            UISafe(async  () =>
+            try
             {
-                SendStepRPMValueChange();
-            });
-        }
-
-        private void tbRPMmax_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key != Key.Enter)
-                return;
-
-            UISafe(async () =>
+                await SendPWMValuesChange();
+            }
+            catch (Exception err)
             {
-                var rpmMax = int.Parse(tbRPMmax.Text);
-                slStepRPM.Maximum = rpmMax;
-            });
-        }
-
-        private void SendStepRPMValueChange()
-        {
-            var steps = int.Parse(tbSteps.Text);
-            var value = slStepRPM.Value;
-
-            var hertz = value / 60;    // converte o rpm em hertz
-            var period = 1 / hertz;    // converte hertz para periodo
-            var tick = period / timer_value;     // calcula o valor do timer para o periodo
-            var tick_step = (uint)(tick / steps);    // divide entre os passos do motor
-
-            var tick_step_bytes = BitConverter.GetBytes(tick_step);
-
-            var msg = new byte[] { 3, tick_step_bytes[0], tick_step_bytes[1], tick_step_bytes[2], tick_step_bytes[3] };
-            //_device.SendMessage(msg);
-
-            var onestepperiodinus = (period / steps * 1000000);
-
-            lbRPMlabel.Content = $"RPM: {value.ToString("0")}";
-            lbRPMdisplay.Content = $"RPM tick: {tick.ToString("#,##0.000")} - Step tick: {tick_step.ToString("#,##0.000")}";
-            lbStepWidth.Content = $"{onestepperiodinus.ToString("#,##0.000")}us";
-        }
-
-        private void tgbCClock_Click(object sender, RoutedEventArgs e)
-        {
-            var value = tgbCClock.IsChecked ?? false ? 1 : 0;
-
-            UISafe(async () =>
-            {
-                var msg = new byte[] { 5, (byte)value };
-                //_device.SendMessage(msg);
-            });
-        }
-
-        public void tglRunning_Click(object sender, RoutedEventArgs e)
-        {
-            var value = tglRunning.IsChecked ?? false ? 1 : 0;
-
-            UISafe(async () =>
-            {
-                var msg = new byte[] { 7, (byte)value };
-                //_device.SendMessage(msg);
-            });
-        }
-
-        public void btOneStep_Click(object sender, RoutedEventArgs e)
-        {
-            UISafe(async () =>
-            {
-                var msg = new byte[] { 8 };
-                //_device.SendMessage(msg);
-            });
-        }
-
-        private void tbPWMwidth_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key != Key.Enter)
-                return;
-
-            UISafe(async () =>
-            {
-                SendPWMValuesChange();
-            });
+                Program.ErrorHandler(err);
+            }
 
             //    var hertz = double.Parse(tbPWMwidth.Text);
             //var period = 1 / hertz;    // converte hertz para periodo
@@ -330,15 +395,19 @@ namespace DroneV0Soft.App.Windows
             //PWM_Slider.Maximum = tick;
         }
 
-        private void PWM_Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private async void slManualPWM_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!_afterIni)
                 return;
 
-            UISafe(async () =>
+            try
             {
-                SendPWMValuesChange();
-            });
+                await SendPWMValuesChange();
+            }
+            catch (Exception err)
+            {
+                Program.ErrorHandler(err);
+            }
 
             //var value = PWM_Slider.Value;
 
@@ -354,50 +423,75 @@ namespace DroneV0Soft.App.Windows
             //PWM_Display.Content = $"PWM Maxium tick: {PWM_Slider.Maximum.ToString("#,000")} - On tick: {pwm_on.ToString("#,000")} - Off tick: {(PWM_Slider.Maximum - pwm_on).ToString("#,000")}";
         }
 
-        private void slPWMadcon_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private async void slManualPWMadcon_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!_afterIni)
                 return;
 
-            UISafe(async () =>
+            try
             {
-                SendPWMValuesChange();
-            });
+                await SendPWMValuesChange();
+            }
+            catch (Exception err)
+            {
+                Program.ErrorHandler(err);
+            }
         }
 
-        private void SendPWMValuesChange()
+        private async Task SendPWMValuesChange()
         {
-            var pwmhertz = double.Parse(tbPWMwidth.Text);
+            var pwmhertz = double.Parse(tbManualPWMwidth.Text);
             var pwmperiod = 1 / pwmhertz;    // converte hertz para periodo
             var pwmtick = (uint)(pwmperiod / timer_value);     // calcula o valor do timer para o periodo
 
-            PWM_Slider.Maximum = pwmtick;
+            slManualPWM.Maximum = pwmtick;
 
-            var onvalue = PWM_Slider.Value;
-            var onvaluebeforeadcpercent = slPWMadcon.Value;
+            var onvalue = slManualPWM.Value;
+            var onvaluebeforeadcpercent = slManualPWMadcon.Value;
             var onvaluebeforeadc = (onvaluebeforeadcpercent * onvalue) / 100;
             var onvalueafteradc = onvalue - onvaluebeforeadc;
             var onvalueoff = pwmtick - onvalue;
 
-            var pwmonbeforeadc_bytes = BitConverter.GetBytes((uint)onvaluebeforeadc);
-            var pwmonafteradc_bytes = BitConverter.GetBytes((uint)onvalueafteradc);
-            var pwmoff_bytes = BitConverter.GetBytes((uint)onvalueoff);
+            //var pwmonbeforeadc_bytes = BitConverter.GetBytes((uint)onvaluebeforeadc);
+            //var pwmonafteradc_bytes = BitConverter.GetBytes((uint)onvalueafteradc);
+            //var pwmoff_bytes = BitConverter.GetBytes((uint)onvalueoff);
 
-            var msg = new byte[] { 4,
-                pwmonbeforeadc_bytes[0], pwmonbeforeadc_bytes[1], pwmonbeforeadc_bytes[2], pwmonbeforeadc_bytes[3],
-                pwmonafteradc_bytes[0], pwmonafteradc_bytes[1], pwmonafteradc_bytes[2], pwmonafteradc_bytes[3],
-                pwmoff_bytes[0], pwmoff_bytes[1], pwmoff_bytes[2], pwmoff_bytes[3]
-            };
+            //var msg = new byte[] { 4,
+            //    pwmonbeforeadc_bytes[0], pwmonbeforeadc_bytes[1], pwmonbeforeadc_bytes[2], pwmonbeforeadc_bytes[3],
+            //    pwmonafteradc_bytes[0], pwmonafteradc_bytes[1], pwmonafteradc_bytes[2], pwmonafteradc_bytes[3],
+            //    pwmoff_bytes[0], pwmoff_bytes[1], pwmoff_bytes[2], pwmoff_bytes[3]
+            //};
             //_device.SendMessage(msg);
+            await _motor.ChannelManualPWM(_index, (ushort)onvaluebeforeadc, (ushort)onvalueafteradc, (ushort)onvalueoff);
 
             var pwmperiodus = pwmperiod * 1000000;
             var onvaluebeforeadcus = onvaluebeforeadc * timer_value * 1000000;
 
-            PWM_Label.Content = $"PWM on: {onvalue.ToString("#.000")}";
-            lbPWMadcon.Content = $"Adc aquisition: {slPWMadcon.Value.ToString("#.000")}%";
+            lbManualPWM.Content = $"PWM on: {onvalue.ToString("#.000")}";
+            lbManualPWMadcon.Content = $"Adc aquisition: {slManualPWMadcon.Value.ToString("#.000")}%";
             lbPWMwidth.Content = $"{pwmperiodus.ToString("#.000")}us";
             lbAdcTiming.Content = $"{onvaluebeforeadcus.ToString("#.000")}us";
-            PWM_Display.Content = $"PWM Maxium tick: {PWM_Slider.Maximum.ToString("#,000")} - On tick: {onvalue.ToString("#,000")} - Off tick: {(PWM_Slider.Maximum - onvalue).ToString("#,000")}";
+            lbDispalyPWM.Content = $"PWM Maxium tick: {slManualPWM.Maximum.ToString("#,000")} - On tick: {onvalue.ToString("#,000")} - Off tick: {(slManualPWM.Maximum - onvalue).ToString("#,000")}";
+        }
+        #endregion
+
+        private async void tgbAutoOnOff_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                var state = tgbAutoOnOff.IsChecked ?? false ?
+                    ChannelStateEnum.CS_Automatic_Off :
+                    ChannelStateEnum.CS_AutomaticStarting;
+
+                await _motor.ChannelChangeState(_index, state);
+            }
+            catch (Exception err)
+            {
+                e.Handled = true;
+
+                Program.ErrorHandler(err);
+            }
+            //SetManualGroups(true);
         }
     }
 }

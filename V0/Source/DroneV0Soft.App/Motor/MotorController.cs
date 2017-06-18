@@ -34,11 +34,11 @@ namespace DroneV0Soft.App.Motor
 
             var response = await Transport.SendMessageWithResonse<ChannelChangeModeResponse>(request);
 
-            if (response.ChannelMode != mode)
+            if (response.Mode != mode)
                 throw new Exception("ChannelChangeMode fail!");
         }
 
-        public async Task ChannelChangState(int index, ChannelStateEnum state)
+        public async Task ChannelChangeState(int index, ChannelStateEnum state)
         {
             var request = new ChannelChangeStateRequest
             {
@@ -48,8 +48,52 @@ namespace DroneV0Soft.App.Motor
 
             var response = await Transport.SendMessageWithResonse<ChannelChangeStateResponse>(request);
 
-            if (response.ChannelState != state)
-                throw new Exception("ChannelChangeState fail!");
+            if (state == ChannelStateEnum.CS_Automatic_Off || state == ChannelStateEnum.CS_AutomaticStoping)
+            {
+                if (!(response.State == ChannelStateEnum.CS_Automatic_Off || response.State == ChannelStateEnum.CS_AutomaticStoping))
+                    throw new Exception("ChannelChangeState fail!");
+            }
+            else
+            {
+                if (response.State != state)
+                    throw new Exception("ChannelChangeState fail!");
+            }
+        }
+
+        public async Task ChannelManualConfig(int index, byte direction, byte oneStep)
+        {
+            var request = new ChannelManualConfig
+            {
+                Index = index,
+                Direction = direction,
+                OneStep = oneStep
+            };
+
+            await Transport.SendMessage(request);
+        }
+
+        public async Task ChannelManualStep(int index, uint stepTicks)
+        {
+            var request = new ChannelManualStep
+            {
+                Index = index,
+                StepTicks = stepTicks
+            };
+
+            await Transport.SendMessage(request);
+        }
+
+        public async Task ChannelManualPWM(int index, ushort pwmOnBeforeAdc, ushort pwmOnAfterAdc, ushort pwmOff)
+        {
+            var request = new ChannelManualPWM
+            {
+                Index = index,
+                PwmOnBeforeAdc = pwmOnBeforeAdc,
+                PwmOnAfterAdc = pwmOnAfterAdc,
+                PwmOff = pwmOff
+            };
+
+            await Transport.SendMessage(request);
         }
     }
 }

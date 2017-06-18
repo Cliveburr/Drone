@@ -30,14 +30,17 @@ namespace DroneV0Soft.App.Motor.Message
 
     public class ChannelChangeStateResponse : IMessageResponse
     {
-        public ChannelStateEnum ChannelState { get; set; }
+        public ChannelModeEnum Mode { get; set; }
+        public ChannelStateEnum State { get; set; }
 
         public void Parse(byte[] msg)
         {
             using (var mem = new MemoryStream(msg))
             using (var binary = new BinaryReader(mem))
             {
-                ChannelState = (ChannelStateEnum)binary.ReadByte();
+                Mode = (ChannelModeEnum)binary.ReadByte();
+
+                State = (ChannelStateEnum)binary.ReadByte();
             }
         }
     }

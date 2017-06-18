@@ -1,6 +1,8 @@
 #ifndef BLDC_ESC_USER_H
 #define	BLDC_ESC_USER_H
 
+#include <htc.h>
+
 #define PHASEAH      LATDbits.LATD2
 #define PHASEAL      LATDbits.LATD3
 

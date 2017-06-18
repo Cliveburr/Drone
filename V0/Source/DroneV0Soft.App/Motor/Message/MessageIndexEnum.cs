@@ -10,6 +10,9 @@ namespace DroneV0Soft.App.Motor.Message
     {
         ChannelInfo = 1,
         ChannelChangeMode = 2,
-        ChannelChangeState = 3
+        ChannelChangeState = 3,
+        ChannelManualConfig = 4,
+        ChannelManualStep = 5,
+        ChannelManualPWM = 6
     }
 }

@@ -5,49 +5,46 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DroneV0Soft.App.Windows"
         mc:Ignorable="d"
-        Title="Motor Controller Channel " Height="650" Width="1102.187">
+        Title="Motor Controller Channel " Height="687" Width="1102.187">
     <Grid>
         <TabControl x:Name="tabControl">
             <TabItem>
                 <TabItem.Header>
-                    <Label Content="Manual" MouseLeftButtonDown="tabControlManual_MouseLeftButtonDown" HorizontalAlignment="Stretch"/>
+                    <Label Content="Manual" PreviewMouseLeftButtonDown="tabControlManual_MouseLeftButtonDown" HorizontalAlignment="Stretch"/>
                 </TabItem.Header>
                 <Grid Margin="3" Background="#FFE5E5E5">
                     <DockPanel>
                         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-                            <ToggleButton x:Name="tgbOnOff" Margin="3" Content="On / Off" Width="100" Click="tgbOnOff_Click"></ToggleButton>
-                            <Button x:Name="button" Margin="3,3,3,3" Content="Switch Power" Width="75" Click="button_Click"/>
-                            <Label x:Name="label" Margin="3,3,3,3" Content="Label" />
+                            <ToggleButton x:Name="tgbManualOnOff" Margin="3" Content="On / Off" Width="100" PreviewMouseLeftButtonDown="tgbManualOnOff_PreviewMouseLeftButtonDown"></ToggleButton>
                         </StackPanel>
-                        <GroupBox Margin="5" DockPanel.Dock="Top" Header="Step:">
+                        <GroupBox x:Name="grbManualStep" Margin="5" DockPanel.Dock="Top" Header="Step:">
                             <DockPanel Margin="5">
                                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-                                    <ToggleButton x:Name="tgbCClock" Margin="3" Content="Counter-Clockwise" Width="120" Click="tgbCClock_Click"></ToggleButton>
-                                    <ToggleButton x:Name="tglRunning" Margin="3" Content="Toogle Running" Width="120" Click="tglRunning_Click"/>
-                                    <Button x:Name="btOneStep" Margin="3" Content="One Step" Width="120" Click="btOneStep_Click"/>
+                                    <ToggleButton x:Name="tgbManualDirection" Margin="3" Content="Direction" Width="100" Click="tgbManualDirection_Click"></ToggleButton>
+                                    <Button x:Name="btManualOneSte" Margin="3" Content="One Step" Width="100" Click="btManualOneStep_Click"/>
                                 </StackPanel>
                                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
                                     <Label Content="Steps:" />
-                                    <TextBox x:Name="tbSteps" Margin="3" Width="100" Text="30" KeyDown="tbSteps_KeyDown"></TextBox>
+                                    <TextBox x:Name="tbManualSteps" Margin="3" Width="100" Text="36" KeyDown="tbManualSteps_KeyDown"></TextBox>
                                     <Label Content="RPM Max:" />
-                                    <TextBox x:Name="tbRPMmax" Margin="3" Width="100" Text="1000" KeyDown="tbRPMmax_KeyDown"></TextBox>
+                                    <TextBox x:Name="tbManualRPMmax" Margin="3" Width="100" Text="1000" KeyDown="tbManualRPMmax_KeyDown"></TextBox>
                                 </StackPanel>
-                                <Label DockPanel.Dock="Top" x:Name="lbRPMlabel" Margin="3" Content="RPM: 0" />
-                                <Label DockPanel.Dock="Bottom" x:Name="lbRPMdisplay" Margin="3" Content="RPM tick: 0  - Step tick: 0" />
-                                <Slider x:Name="slStepRPM" Margin="3" Delay="500" Maximum="1000" Minimum="1" Value="0" ValueChanged="slStepRPM_ValueChanged" />
+                                <Label DockPanel.Dock="Top" x:Name="lbManualRPMlabel" Margin="3" Content="RPM: 0" />
+                                <Label DockPanel.Dock="Bottom" x:Name="lbManualRPMdisplay" Margin="3" Content="RPM tick: 0  - Step tick: 0" />
+                                <Slider x:Name="slManualStepRPM" Margin="3" Delay="500" Maximum="1000" Minimum="1" Value="0" ValueChanged="slManualStepRPM_ValueChanged" />
                             </DockPanel>
                         </GroupBox>
-                        <GroupBox Margin="5" DockPanel.Dock="Top" Header="PWM positive pulse:">
+                        <GroupBox x:Name="grbManualPwm" Margin="5" DockPanel.Dock="Top" Header="PWM positive pulse:">
                             <StackPanel Margin="5">
                                 <StackPanel Orientation="Horizontal">
                                     <Label Content="PWM Width (Hz):" />
-                                    <TextBox x:Name="tbPWMwidth" Margin="3" Width="100" Text="10000" KeyDown="tbPWMwidth_KeyDown"></TextBox>
+                                    <TextBox x:Name="tbManualPWMwidth" Margin="3" Width="100" Text="10000" KeyDown="tbManualPWMwidth_KeyDown"></TextBox>
                                 </StackPanel>
-                                <Label x:Name="PWM_Label" Margin="3" Content="PWM on: 0" />
-                                <Slider x:Name="PWM_Slider" Margin="3" Delay="500" Maximum="1200" Minimum="0" Value="600" ValueChanged="PWM_Slider_ValueChanged"/>
-                                <Label x:Name="lbPWMadcon" Margin="3" Content="Adc aquisition: 50%" />
-                                <Slider x:Name="slPWMadcon" Margin="3" Delay="500" Maximum="100" Minimum="0" Value="50" ValueChanged="slPWMadcon_ValueChanged"/>
-                                <Label x:Name="PWM_Display" Margin="3" Content="PWM:" />
+                                <Label x:Name="lbManualPWM" Margin="3" Content="PWM on: 0" />
+                                <Slider x:Name="slManualPWM" Margin="3" Delay="500" Maximum="1200" Minimum="0" Value="600" ValueChanged="slManualPWM_ValueChanged"/>
+                                <Label x:Name="lbManualPWMadcon" Margin="3" Content="Adc aquisition: 50%" />
+                                <Slider x:Name="slManualPWMadcon" Margin="3" Delay="500" Maximum="100" Minimum="0" Value="50" ValueChanged="slManualPWMadcon_ValueChanged"/>
+                                <Label x:Name="lbDispalyPWM" Margin="3" Content="PWM:" />
                             </StackPanel>
                         </GroupBox>
                         <GroupBox Margin="5" Header="Step:">
@@ -74,9 +71,15 @@
             </TabItem>
             <TabItem>
                 <TabItem.Header>
-                    <Label Content="Automatic" MouseLeftButtonDown="tabControlAutomatic_MouseLeftButtonDown" HorizontalAlignment="Stretch"/>
+                    <Label Content="Automatic" PreviewMouseLeftButtonDown="tabControlAutomatic_MouseLeftButtonDown" HorizontalAlignment="Stretch"/>
                 </TabItem.Header>
-                <Grid Background="#FFE5E5E5"/>
+                <Grid Background="#FFE5E5E5">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                            <ToggleButton x:Name="tgbAutoOnOff" Margin="3" Content="On / Off" Width="100" PreviewMouseLeftButtonDown="tgbAutoOnOff_PreviewMouseLeftButtonDown"></ToggleButton>
+                        </StackPanel>
+                    </DockPanel>
+                </Grid>
             </TabItem>
         </TabControl>
     </Grid>

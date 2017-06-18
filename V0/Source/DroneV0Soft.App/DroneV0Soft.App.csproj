@@ -56,7 +56,11 @@
     <Compile Include="Motor\ChannelModeEnum.cs" />
     <Compile Include="Motor\ChannelStateEnum.cs" />
     <Compile Include="Motor\Message\ChannelChangeMode.cs" />
+    <Compile Include="Motor\Message\ChannelChangeState.cs" />
     <Compile Include="Motor\Message\ChannelInfo.cs" />
+    <Compile Include="Motor\Message\ChannelManualConfig.cs" />
+    <Compile Include="Motor\Message\ChannelManualPWM.cs" />
+    <Compile Include="Motor\Message\ChannelManualStep.cs" />
     <Compile Include="Motor\Message\IMessageResponse.cs" />
     <Compile Include="Motor\Message\IMessageRequest.cs" />
     <Compile Include="Motor\Message\MessageIndexEnum.cs" />

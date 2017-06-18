@@ -12,6 +12,8 @@ namespace DroneV0Soft.App.Motor.Transport
     {
         public delegate void OnMessageReceiveDelegate(byte[] msg);
         public event OnMessageReceiveDelegate OnMessageReceive;
+        public delegate void OnRemovedDelegate();
+        public event OnRemovedDelegate OnRemoved;
 
         private const int _vendorId = 0x1781;
         private const int _productId = 0x07D0;
@@ -61,6 +63,8 @@ namespace DroneV0Soft.App.Motor.Transport
 
                 _device.Dispose();
                 _device = null;
+
+                OnRemoved?.Invoke();
             }
         }
 
@@ -113,11 +117,11 @@ namespace DroneV0Soft.App.Motor.Transport
             }
         }
 
-        public async void SendMessage(IMessageRequest request)
+        public Task SendMessage(IMessageRequest request)
         {
             var bytesRequest = request.GetBytes();
 
-            await Task.Run(() =>
+            return Task.Run(() =>
             {
                 Write(bytesRequest);
             });

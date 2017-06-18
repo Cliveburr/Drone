@@ -27,8 +27,8 @@ namespace DroneV0Soft.App.Motor.Message
 
     public class ChannelInfoResponse : IMessageResponse
     {
-        public ChannelModeEnum ChannelMode { get; set; }
-        public ChannelStateEnum ChannelState { get; set; }
+        public ChannelModeEnum Mode { get; set; }
+        public ChannelStateEnum State { get; set; }
         public uint StepTimerValue { get; set; }
         public ushort PwmOnBeforeAdc { get; set; }
         public ushort PwmOnAfterAdc { get; set; }
@@ -39,9 +39,9 @@ namespace DroneV0Soft.App.Motor.Message
             using (var mem = new MemoryStream(msg))
             using (var binary = new BinaryReader(mem))
             {
-                ChannelMode = (ChannelModeEnum)binary.ReadByte();
+                Mode = (ChannelModeEnum)binary.ReadByte();
 
-                ChannelState = (ChannelStateEnum)binary.ReadByte();
+                State = (ChannelStateEnum)binary.ReadByte();
 
                 StepTimerValue = binary.ReadUInt32();
 

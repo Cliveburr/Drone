@@ -52,8 +52,16 @@ namespace DroneV0Soft.App
             if (motorWindow == null)
             {
                 motorWindow = new MotorWindow(index);
-                MotorWindow[index] = motorWindow;
-                motorWindow.Show();
+                if (motorWindow.IsEnabled)
+                {
+                    MotorWindow[index] = motorWindow;
+                    motorWindow.Closed += (object sender, EventArgs e) =>
+                    {
+                        MotorWindow[index] = null;
+                    };
+
+                    motorWindow.Show();
+                }
             }
             else
             {

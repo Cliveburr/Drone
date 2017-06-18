@@ -95,14 +95,14 @@ void APP_DeviceTasks()
                 }
                 
                 // generate response
-
                 ToSendDataBuffer[0] = BLDC_Esc_Channels[index].mode;
+                ToSendDataBuffer[1] = BLDC_Esc_Channels[index].state;
                 
                 USBInHandle = HIDTxPacket(CUSTOM_DEVICE_HID_EP, (uint8_t*)&ToSendDataBuffer[0], 64);
                 
                 break;
             }
-            case 3:  // Channel0 step value change
+            case 3:  // ChannelChangeState
             {
                 //union ULongConvertion tick;
                 //tick.bytes[0] = ReceivedDataBuffer[1];
@@ -110,10 +110,78 @@ void APP_DeviceTasks()
                 //tick.bytes[2] = ReceivedDataBuffer[3];
                 //tick.bytes[3] = ReceivedDataBuffer[4];
                 //Channel0.stepTimer.Value = tick.value;
+
+                // parse request
+                unsigned char index = ReceivedDataBuffer[1];
+
+                enum ChannelState state = ReceivedDataBuffer[2];
+
+                // process the message
+                switch (state) {
+                    case CS_ManualOff: BLDC_Esc_SetManualOff(index); break;
+                    case CS_ManualOn: BLDC_Esc_SetManualOn(index); break;
+                    case CS_AutomaticStoping:
+                    case CS_Automatic_Off: BLDC_Esc_SetAutomaticOff(index); break;
+                    case CS_AutomaticStarting:
+                    case CS_AutomaticRunning: BLDC_Esc_SetAutomaticOn(index); break;
+                }
+
+                // generate response
+                ToSendDataBuffer[0] = BLDC_Esc_Channels[index].mode;
+                ToSendDataBuffer[1] = BLDC_Esc_Channels[index].state;
+                
+                USBInHandle = HIDTxPacket(CUSTOM_DEVICE_HID_EP, (uint8_t*)&ToSendDataBuffer[0], 64);
+
                 break;
             }
-            case 4:  // Channel0 pwm values change
+            case 4:  // ChannelManualConfig
             {
+                // parse request
+                unsigned char index = ReceivedDataBuffer[1];
+                
+                unsigned char direction = ReceivedDataBuffer[2];
+                unsigned char oneStep = ReceivedDataBuffer[3];
+                
+                // process the message
+                BLDC_Esc_SetManualConfig(index, direction, oneStep);
+
+                break;
+            }
+            case 5:  // ChannelManualStep
+            {
+                // parse request
+                unsigned char index = ReceivedDataBuffer[1];
+                
+                ULong32Convertion.bytes[0] = ReceivedDataBuffer[2];
+                ULong32Convertion.bytes[1] = ReceivedDataBuffer[3];
+                ULong32Convertion.bytes[2] = ReceivedDataBuffer[4];
+                ULong32Convertion.bytes[3] = ReceivedDataBuffer[5];
+                
+                // process the message
+                BLDC_Esc_SetManualStep(index, ULong32Convertion.value);
+                
+                break;
+            }
+            case 6:  // ChannelManualPWM
+            {
+                // parse request
+                unsigned char index = ReceivedDataBuffer[1];
+
+                UInt16Convertion.bytes[0] = ReceivedDataBuffer[2];
+                UInt16Convertion.bytes[1] = ReceivedDataBuffer[3];
+                unsigned int pwmOnBeforeAdc = UInt16Convertion.value;
+                
+                UInt16Convertion.bytes[0] = ReceivedDataBuffer[4];
+                UInt16Convertion.bytes[1] = ReceivedDataBuffer[5];
+                unsigned int pwmOnAfterAdc = UInt16Convertion.value;
+
+                UInt16Convertion.bytes[0] = ReceivedDataBuffer[6];
+                UInt16Convertion.bytes[1] = ReceivedDataBuffer[7];
+                unsigned int pwmOff = UInt16Convertion.value;
+
+                // process the message
+                BLDC_Esc_SetManualPWM(index, pwmOnBeforeAdc, pwmOnAfterAdc, pwmOff);
+                
                 //union ULongConvertion tick;
                 //tick.bytes[0] = ReceivedDataBuffer[1];
                 //tick.bytes[1] = ReceivedDataBuffer[2];
@@ -130,15 +198,6 @@ void APP_DeviceTasks()
                 //tick.bytes[2] = ReceivedDataBuffer[11];
                 //tick.bytes[3] = ReceivedDataBuffer[12];
                 //Channel0.pwmOff = tick.value;
-                break;
-            }
-            case 5:  // Channel0 isfoward change
-            {
-                //Channel0.isFoward = ReceivedDataBuffer[1];
-                break;
-            }
-            case 6:
-            {
                 break;
             }
             case 7:  // Channel0 isrunning change

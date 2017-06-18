@@ -5,13 +5,14 @@ unsigned short TimerLastValue = 0;
 unsigned short TimerActualValue = 0;
 unsigned short TimerDiffValue = 0;
 
-typedef void (*TimerEventCallback)();
+typedef void (*TimerEventCallback)(unsigned char tag);
 
 struct TimerEventStruct {
     unsigned long value;
     unsigned long missing;
     TimerEventCallback callback;
     unsigned char enabled;
+    unsigned char tag;
 };
 
 void TimerEvent_Tick();

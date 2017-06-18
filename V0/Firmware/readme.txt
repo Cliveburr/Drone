@@ -62,3 +62,20 @@ pwmOnAfterAdc = (666 * 50%) * 50% = 166 ticks
 pwmOff = 666 * 50% = 333 ticks
 
 
+
+
+Stating count
+
+step_tick_start = 334031
+step_tick_target = 20000
+
+diff = step_tick_start - step_tick_target = 314031
+
+pulse to increment = 500hz = 0,002s = 2ms = 2.000us
+ticks = 24.000
+
+time to reach = 3s
+total pulse = time to reach / pulse to increment = 3 / 0,002 = 1500
+
+314031 / 1500 = 209
+
