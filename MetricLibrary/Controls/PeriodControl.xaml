@@ -1,0 +1,23 @@
+﻿<UserControl x:Class="MetricLibrary.Controls.PeriodControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MetricLibrary.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="23" d:DesignWidth="300" MinHeight="23">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="88" />
+        </Grid.ColumnDefinitions>
+        <TextBox x:Name="textBox" Grid.Column="0" HorizontalContentAlignment="Right" PreviewKeyDown="textBox_PreviewKeyDown"></TextBox>
+        <ComboBox x:Name="comboBox" Grid.Column="1" SelectedIndex="0" SelectionChanged="comboBox_SelectionChanged">
+            <ComboBoxItem Content="PicoSecond" Tag="-4" />
+            <ComboBoxItem Content="NanoSeconds" Tag="-3" />
+            <ComboBoxItem Content="MicroSeconds" Tag="-2" />
+            <ComboBoxItem Content="MiliSeconds" Tag="-1" />
+            <ComboBoxItem Content="Seconds" Tag="0" />
+        </ComboBox>
+    </Grid>
+</UserControl>

@@ -15,8 +15,9 @@ void BLDC_Esc_Initialize() {
     
     CrossZeroDef = 3;
     
-    AutomaticStartStopValue = 334031;
-    AutomaticStartStopInc = 209;
+    AutomaticStartStopBegin = 333333;
+    AutomaticStartStopEnd = 15384;
+    AutomaticStartStopInc = 20;
 
     BLDC_Esc_Channels[0].mode = CM_Manual;
     BLDC_Esc_Channels[0].state = CS_ManualOff;
@@ -28,7 +29,7 @@ void BLDC_Esc_Initialize() {
     BLDC_Esc_Channels[0].pwmTimer.tag = 0;
     BLDC_Esc_Channels[0].automaticStartStopTimer.callback = BLDC_Esc_SetAutomaticStartStop;
     BLDC_Esc_Channels[0].automaticStartStopTimer.tag = 0;
-    BLDC_Esc_Channels[0].automaticStartStopTimer.value = 24000;
+    BLDC_Esc_Channels[0].automaticStartStopTimer.value = 12000;
     BLDC_Esc_Channels[0].automaticStartStopTimer.enabled = 0;    
     //Channel0.stepTimer.Callback = Channel0Step_cb_hard;
     //Channel0.pwmTimer.Callback = Channel0PWM_cb_hard;
@@ -45,11 +46,13 @@ void BLDC_Esc_Task() {
     
     TimerEvent_Tick();
 
-    BLDC_Esc_Tick(&BLDC_Esc_Channels[0]);
+    BLDC_Esc_Tick(0);
     
 }
 
-void BLDC_Esc_Tick(struct ChannelStruct *channel) {
+void BLDC_Esc_Tick(unsigned char index) {
+    struct ChannelStruct* channel = &BLDC_Esc_Channels[index];
+
     if (channel->mode == CM_Manual) {
         if (channel->state == CS_ManualOn) {
             TimerEvent_Check(&channel->stepTimer);
@@ -60,23 +63,13 @@ void BLDC_Esc_Tick(struct ChannelStruct *channel) {
         if (channel->state != CS_Automatic_Off) {
             TimerEvent_Counter(&channel->stepLengthCounter);
 
-            // detect cross zero
-            unsigned char crosszero = 0;
-
-            if (crosszero != channel->isCrossZero && 0) {
-                channel->crossZeroCount--;
-                if (channel->crossZeroCount == 0) {
-                    channel->crossZeroCount = CrossZeroDef;
-                    channel->isCrossZero = crosszero;
-                    
-                    //CrossZeroEvent(channel);
+            if (channel->state == CS_AutomaticRunning) {
+                if (channel->pwmState == 2) {
+                    BLDC_Esc_CrossZeroEvent(channel);
                 }
             }
             else {
-                channel->crossZeroCount = CrossZeroDef;
-            }
-
-            if (channel->state == CS_AutomaticStarting || channel->state == CS_AutomaticStoping) {
+            //if (channel->state == CS_AutomaticStarting || channel->state == CS_AutomaticStoping) {
                 TimerEvent_Check(&channel->automaticStartStopTimer);
             }
             
@@ -86,20 +79,36 @@ void BLDC_Esc_Tick(struct ChannelStruct *channel) {
     }
 }
 
-void CrossZeroEvent(struct ChannelStruct *channel) {
-    unsigned long stepLength = channel->stepLengthCounter.value;
-    channel->stepLengthCounter.value = 0;
+void BLDC_Esc_CrossZeroEvent(struct ChannelStruct *channel) {
+    // if (channel->state == CS_AutomaticStarting) {
+    //     unsigned long variableLength = channel->stepTimer.value * 0.05;
+    //     if (stepLength > channel->stepTimer.value - variableLength && stepLength < channel->stepTimer.value + variableLength) {
+    //         channel->state == CS_AutomaticRunning;
+    //         channel->stepTimer.enabled = 0;
+    //     }
+    // }
+    // else if (channel->state == CS_AutomaticStoping) {
+    // }
 
-    if (channel->state == CS_AutomaticStarting) {
-        unsigned long variableLength = channel->stepTimer.value * 0.05;
-        if (stepLength > channel->stepTimer.value - variableLength && stepLength < channel->stepTimer.value + variableLength) {
-            channel->state == CS_AutomaticRunning;
-            channel->stepTimer.enabled = 0;
+    unsigned char crosszero = BLDC_Esc_CrossZeroDetect(index, channel->step);
+
+    if (crosszero != channel->isCrossZero) {
+        channel->crossZeroCount--;
+        if (channel->crossZeroCount == 0) {
+            channel->crossZeroCount = CrossZeroDef;
+            channel->isCrossZero = crosszero;
+            
+            //BLDC_Esc_CrossZeroEvent(channel);
+            unsigned long stepLength = channel->stepLengthCounter.value;
+            channel->stepLengthCounter.value = 0;
+
+            stepLength = stepLength / 2;
+            channel->stepTimer.missing = channel->stepTimer.value = stepLength;
+            channel->stepTimer.enabled = 1;
         }
     }
-    else if (channel->state == CS_AutomaticStoping) {
-    }
-    else if (channel->state == CS_AutomaticRunning) {
+    else {
+        channel->crossZeroCount = CrossZeroDef;
     }
 }
 
@@ -185,7 +194,7 @@ void BLDC_Esc_SetAutomaticOn(unsigned char index) {
 
     if (channel->mode == CM_Automatic && channel->state == CS_Automatic_Off) {
         channel->stepTimer.callback = BLDC_Esc_WHL_Step;
-        channel->stepTimer.missing = channel->stepTimer.value = AutomaticStartStopValue;
+        channel->stepTimer.missing = channel->stepTimer.value = AutomaticStartStopBegin;
         channel->stepTimer.enabled = 1;
 
         channel->pwmState = 0;
@@ -207,27 +216,47 @@ void BLDC_Esc_SetAutomaticOff(unsigned char index) {
     if (channel->mode == CM_Automatic && (channel->state == CS_AutomaticStarting || channel->state == CS_AutomaticRunning)) {
         
         channel->automaticStartStopTimer.enabled = 1;
+        channel->stepTimer.enabled = 1;
         channel->state = CS_AutomaticStoping;
     }
 }
 
+const unsigned long easy_value = 1000000000;
+
 void BLDC_Esc_SetAutomaticStartStop(unsigned char tag) {
     struct ChannelStruct* channel = &BLDC_Esc_Channels[tag];
     
-    if (channel->state == CS_AutomaticStarting) {
-        channel->stepTimer.value -= AutomaticStartStopInc;
+    unsigned float tocalc = 0;
 
-        if (channel->stepTimer.value <= 20000) {   // 1000 rpm
+    if (channel->state == CS_AutomaticStarting) {
+        tocalc = easy_value / channel->stepTimer.value;
+        tocalc -= AutomaticStartStopInc;
+        tocalc = easy_value / tocalc;
+
+        channel->stepTimer.value = tocalc;
+
+        if (channel->stepTimer.value <= AutomaticStartStopEnd) {
             channel->automaticStartStopTimer.enabled = 0;
             channel->state = CS_AutomaticRunning;
         }
     }
     else if (channel->state == CS_AutomaticStoping) {
-        channel->stepTimer.value += AutomaticStartStopInc;
+        tocalc = easy_value / channel->stepTimer.value;
+        tocalc += AutomaticStartStopInc;
+        tocalc = easy_value / tocalc;
 
-        if (channel->stepTimer.value >= AutomaticStartStopValue) {
+        channel->stepTimer.value = tocalc;
+
+        if (channel->stepTimer.value >= AutomaticStartStopBegin) {
             channel->automaticStartStopTimer.enabled = 0;
             channel->state = CS_Automatic_Off;
         }
-    }    
+    }
+}
+
+void BLDC_Esc_ConfigStartStopCurve(unsigned int beginValue, unsigned int endValue, unsigned char incValue, unsigned int clockValue) {
+    AutomaticStartStopBegin = beginValue;
+    AutomaticStartStopEnd = endValue;
+    AutomaticStartStopInc = incValue;
+    BLDC_Esc_Channels[0].automaticStartStopTimer.value = clockValue;
 }

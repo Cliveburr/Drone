@@ -27,7 +27,6 @@ namespace DroneV0Soft.App.Windows
         const double timer_value = 0.00000008333333333;
 
         private int _index;
-        private MotorController _motor;
         private Timer _timer;
         private ProbeWindow _probeWindow;
         private bool _afterIni = false;
@@ -41,11 +40,6 @@ namespace DroneV0Soft.App.Windows
 
             //_device = new Device();
             //_device.OnMessageReceive += _device_OnMessageReceive;
-            _motor = new MotorController();
-
-            var usbTransport = new UsbTransport();
-            usbTransport.OnRemoved += () => Dispatcher.Invoke(() => Close());
-            _motor.Transport = usbTransport;
 
             GetChannelInfo(true);
 
@@ -69,7 +63,7 @@ namespace DroneV0Soft.App.Windows
         {
             try
             {
-                var info = await _motor.GetChannelInfo(_index);
+                var info = await Program.Motor.GetChannelInfo(_index);
 
                 if (info.Mode == ChannelModeEnum.CM_Manual)
                 {
@@ -113,7 +107,7 @@ namespace DroneV0Soft.App.Windows
         {
             try
             {
-                await _motor.ChannelChangeMode(_index, ChannelModeEnum.CM_Manual);
+                await Program.Motor.ChannelChangeMode(_index, ChannelModeEnum.CM_Manual);
             }
             catch (Exception err)
             {
@@ -127,7 +121,7 @@ namespace DroneV0Soft.App.Windows
         {
             try
             {
-                await _motor.ChannelChangeMode(_index, ChannelModeEnum.CM_Automatic);
+                await Program.Motor.ChannelChangeMode(_index, ChannelModeEnum.CM_Automatic);
             }
             catch (Exception err)
             {
@@ -145,7 +139,7 @@ namespace DroneV0Soft.App.Windows
                     ChannelStateEnum.CS_ManualOff :
                     ChannelStateEnum.CS_ManualOn;
 
-                await _motor.ChannelChangeState(_index, state);
+                await Program.Motor.ChannelChangeState(_index, state);
             }
             catch (Exception err)
             {
@@ -186,7 +180,7 @@ namespace DroneV0Soft.App.Windows
                 var direction = tgbManualDirection.IsChecked ?? false ? 1 : 0;
                 var oneStepByte = oneStep ? 1: 0;
 
-                await _motor.ChannelManualConfig(_index, (byte)direction, (byte)oneStepByte);
+                await Program.Motor.ChannelManualConfig(_index, (byte)direction, (byte)oneStepByte);
             }
             catch (Exception err)
             {
@@ -252,7 +246,7 @@ namespace DroneV0Soft.App.Windows
             var tick = period / timer_value;     // calcula o valor do timer para o periodo
             var tick_step = (uint)(tick / steps);    // divide entre os passos do motor
 
-            await _motor.ChannelManualStep(_index, tick_step);
+            await Program.Motor.ChannelManualStep(_index, tick_step);
 
             var onestepperiodinus = (period / steps * 1000000);
 
@@ -462,7 +456,7 @@ namespace DroneV0Soft.App.Windows
             //    pwmoff_bytes[0], pwmoff_bytes[1], pwmoff_bytes[2], pwmoff_bytes[3]
             //};
             //_device.SendMessage(msg);
-            await _motor.ChannelManualPWM(_index, (ushort)onvaluebeforeadc, (ushort)onvalueafteradc, (ushort)onvalueoff);
+            await Program.Motor.ChannelManualPWM(_index, (ushort)onvaluebeforeadc, (ushort)onvalueafteradc, (ushort)onvalueoff);
 
             var pwmperiodus = pwmperiod * 1000000;
             var onvaluebeforeadcus = onvaluebeforeadc * timer_value * 1000000;
@@ -483,7 +477,7 @@ namespace DroneV0Soft.App.Windows
                     ChannelStateEnum.CS_Automatic_Off :
                     ChannelStateEnum.CS_AutomaticStarting;
 
-                await _motor.ChannelChangeState(_index, state);
+                await Program.Motor.ChannelChangeState(_index, state);
             }
             catch (Exception err)
             {

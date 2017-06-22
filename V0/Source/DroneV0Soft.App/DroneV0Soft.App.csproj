@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DroneV0Soft.App</RootNamespace>
     <AssemblyName>DroneV0Soft.App</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -61,6 +61,7 @@
     <Compile Include="Motor\Message\ChannelManualConfig.cs" />
     <Compile Include="Motor\Message\ChannelManualPWM.cs" />
     <Compile Include="Motor\Message\ChannelManualStep.cs" />
+    <Compile Include="Motor\Message\ConfigStartStopCurve.cs" />
     <Compile Include="Motor\Message\IMessageResponse.cs" />
     <Compile Include="Motor\Message\IMessageRequest.cs" />
     <Compile Include="Motor\Message\MessageIndexEnum.cs" />
@@ -68,9 +69,16 @@
     <Compile Include="Motor\Transport\ITransport.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="VirtualMotor.cs" />
+    <Compile Include="Windows\ConfigurationWindow.xaml.cs">
+      <DependentUpon>ConfigurationWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
+    <Page Include="Windows\ConfigurationWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Windows\MotorWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -127,6 +135,10 @@
     <ProjectReference Include="..\..\..\..\NativeNET\NativeNET\NativeNET.csproj">
       <Project>{435ac815-9d77-4f2b-a751-10393e05de89}</Project>
       <Name>NativeNET</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\MetricLibrary\MetricLibrary.csproj">
+      <Project>{1624701a-813d-48bf-bc62-0756d756d447}</Project>
+      <Name>MetricLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

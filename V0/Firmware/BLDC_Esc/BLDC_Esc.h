@@ -48,7 +48,8 @@ struct ChannelStruct {
 
 unsigned char CrossZeroDef;
 
-unsigned long AutomaticStartStopValue;
+unsigned int AutomaticStartStopBegin;
+unsigned int AutomaticStartStopEnd;
 unsigned char AutomaticStartStopInc;
 
 struct ChannelStruct BLDC_Esc_Channels[4];
@@ -59,7 +60,7 @@ void BLDC_Esc_Task();
 
 void BLDC_Esc_Tick(struct ChannelStruct *channel);
 
-void CrossZeroEvent(struct ChannelStruct *channel);
+void BLDC_Esc_CrossZeroEvent(struct ChannelStruct *channel);
 
 void BLDC_Esc_SetManual(unsigned char index);
 
@@ -80,5 +81,7 @@ void BLDC_Esc_SetAutomaticOn(unsigned char index);
 void BLDC_Esc_SetAutomaticOff(unsigned char index);
 
 void BLDC_Esc_SetAutomaticStartStop(unsigned char tag);
+
+void BLDC_Esc_ConfigStartStopCurve(unsigned int beginValue, unsigned int endValue, unsigned char incValue, unsigned int clockValue);
 
 #endif	/* BLDC_ESC */

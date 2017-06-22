@@ -15,6 +15,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "03 - NativeNET", "03 - Nati
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NativeNET", "..\..\..\..\NativeNET\NativeNET\NativeNET.csproj", "{435AC815-9D77-4F2B-A751-10393E05DE89}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02 - Metric Library", "02 - Metric Library", "{F857406E-393A-48CA-8577-7A8A85A5AB36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetricLibrary", "..\..\..\MetricLibrary\MetricLibrary.csproj", "{1624701A-813D-48BF-BC62-0756D756D447}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,10 @@ Global
 		{435AC815-9D77-4F2B-A751-10393E05DE89}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{435AC815-9D77-4F2B-A751-10393E05DE89}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{435AC815-9D77-4F2B-A751-10393E05DE89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1624701A-813D-48BF-BC62-0756D756D447}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1624701A-813D-48BF-BC62-0756D756D447}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1624701A-813D-48BF-BC62-0756D756D447}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1624701A-813D-48BF-BC62-0756D756D447}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -41,5 +49,6 @@ Global
 		{9CA42678-5131-4770-BB9A-6B3C861058B8} = {B9D03AC3-6283-4625-99BC-C17894B6BBE6}
 		{733B8D65-3BAF-4608-AE81-2CE14CA06805} = {D348165F-079A-439A-9E34-518F7B627DDB}
 		{435AC815-9D77-4F2B-A751-10393E05DE89} = {20132960-66DE-4D4D-8137-F2449652C373}
+		{1624701A-813D-48BF-BC62-0756D756D447} = {F857406E-393A-48CA-8577-7A8A85A5AB36}
 	EndGlobalSection
 EndGlobal

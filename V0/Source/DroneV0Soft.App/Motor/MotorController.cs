@@ -1,5 +1,6 @@
 ﻿using DroneV0Soft.App.Motor.Message;
 using DroneV0Soft.App.Motor.Transport;
+using MetricLibrary;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,9 @@ namespace DroneV0Soft.App.Motor
 {
     public class MotorController
     {
+        public Frequency ClockFrequency { get; set; }
+        public int Steps { get; set; }
+
         public ITransport Transport { get; set; }
 
         public async Task<ChannelInfoResponse> GetChannelInfo(int index)
@@ -91,6 +95,19 @@ namespace DroneV0Soft.App.Motor
                 PwmOnBeforeAdc = pwmOnBeforeAdc,
                 PwmOnAfterAdc = pwmOnAfterAdc,
                 PwmOff = pwmOff
+            };
+
+            await Transport.SendMessage(request);
+        }
+
+        public async Task ConfigStartStopCurve(ushort beginValue, ushort endValue, byte incValue, ushort clockValue)
+        {
+            var request = new ConfigStartStopCurve
+            {
+                BeginValue = beginValue,
+                EndValue = endValue,
+                IncValue = incValue,
+                ClockValue = clockValue
             };
 
             await Transport.SendMessage(request);

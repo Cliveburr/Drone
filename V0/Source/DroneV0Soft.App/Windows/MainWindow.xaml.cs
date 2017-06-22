@@ -33,5 +33,10 @@ namespace DroneV0Soft.App.Windows
         {
             Program.Close();
         }
+
+        private void Configuration_Click(object sender, RoutedEventArgs e)
+        {
+            Program.ShowConfigurationWindow();
+        }
     }
 }

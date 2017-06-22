@@ -21,6 +21,7 @@
         <Button Margin="10" Grid.Row="0" Grid.Column="1" Content="Motor 1" />
         <Button Margin="10" Grid.Row="1" Grid.Column="0" Content="Motor 2" />
         <Button Margin="10" Grid.Row="1" Grid.Column="1" Content="Motor 3" />
-        <Button Margin="10" Grid.Row="0" Grid.Column="2" Content="Probe" />
+        <Button Margin="10" Grid.Row="0" Grid.Column="2" Content="Configuration" Click="Configuration_Click"/>
+        <Button Margin="10" Grid.Row="1" Grid.Column="2" Content="Probe" />
     </Grid>
 </Window>

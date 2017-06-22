@@ -200,13 +200,26 @@ void APP_DeviceTasks()
                 //Channel0.pwmOff = tick.value;
                 break;
             }
-            case 7:  // Channel0 isrunning change
+            case 7:  // ConfigStartStopCurve
             {
-                //Channel0.isRunning = ReceivedDataBuffer[1];
-                //if (Channel0.isRunning) {
-                //    Channel0.stepTimer.Missing = Channel0.stepTimer.Value;
-                //    Channel0.pwmTimer.Missing = Channel0.pwmTimer.Value;
-                //}
+                // parse request
+                UInt16Convertion.bytes[0] = ReceivedDataBuffer[1];
+                UInt16Convertion.bytes[1] = ReceivedDataBuffer[2];
+                unsigned int beginValue = UInt16Convertion.value;
+
+                UInt16Convertion.bytes[0] = ReceivedDataBuffer[3];
+                UInt16Convertion.bytes[1] = ReceivedDataBuffer[4];
+                unsigned int endValue = UInt16Convertion.value;
+                
+                unsigned char incValue = ReceivedDataBuffer[5];
+
+                UInt16Convertion.bytes[0] = ReceivedDataBuffer[6];
+                UInt16Convertion.bytes[1] = ReceivedDataBuffer[7];
+                unsigned int clockValue = UInt16Convertion.value;
+
+                // process the message
+                BLDC_Esc_ConfigStartStopCurve(beginValue, endValue, incValue, clockValue);
+
                 break;
             }
             case 8:  // Channel0 one step

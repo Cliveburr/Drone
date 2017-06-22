@@ -28,6 +28,13 @@ void BLDC_Esc_WHL_Step(unsigned char tag) {
             channel->isOneStep = 0;
         }
     }
+    else {
+        if (channel->state == CS_AutomaticRunning) {
+            channel->stepTimer.enabled = 0;
+        }
+
+        BLDC_Esc_CrossZeroPortSelect(tag, channel->step);
+    }
     
     BLDC_Esc_WHL_Set_Value(tag, channel->step, channel->pwmState != 3);
 }
@@ -85,6 +92,58 @@ void BLDC_Esc_WHL_Set_Value(unsigned char index, unsigned char step, unsigned ch
                     PHASECH = value;
                     PHASEBL = value;
                     break;
+            }
+            break;
+        }
+    }
+}
+
+// Cis = 0 .. RA0 = C1OUT .. RA1 = C2OUT
+// Cis = 1 .. RA3 = C1OUT .. RA2 = C2OUT
+
+void BLDC_Esc_CrossZeroPortSelect(unsigned char index, unsigned char step) {
+    switch (index) {
+        case 0:
+        {
+            switch(step) {
+                case 1:
+                case 4: // channel C free - RA2
+                {
+                    CMCON = 0b00111110;
+                    break;
+                }
+                case 2:
+                case 5: // channel B free - RA1
+                {
+                    CMCON = 0b00110110;
+                    break;
+                }
+                case 3:
+                case 6: // channel A free - RA0
+                {
+                    CMCON = 0b00110110;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+}
+
+unsigned char BLDC_Esc_CrossZeroDetect(unsigned char index, unsigned char step) {
+    switch (index) {
+        case 0:
+        {
+            switch(step) {
+                case 1:
+                case 4: // channel C free
+                    return C2OUT;
+                case 2:
+                case 5: // channel B free
+                    return C2OUT;
+                case 3:
+                case 6: // channel A free
+                    return C1OUT;
             }
             break;
         }
