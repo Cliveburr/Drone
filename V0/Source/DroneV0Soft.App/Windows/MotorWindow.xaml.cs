@@ -86,7 +86,7 @@ namespace DroneV0Soft.App.Windows
                 {
                     tabControl.SelectedIndex = 1;
 
-                    tgbAutoOnOff.IsChecked = info.State != ChannelStateEnum.CS_Automatic_Off;
+                    tgbAutoOnOff.IsChecked = info.State != ChannelStateEnum.CS_AutomaticOff;
                 }
             }
             catch (Exception err)
@@ -474,8 +474,8 @@ namespace DroneV0Soft.App.Windows
             try
             {
                 var state = tgbAutoOnOff.IsChecked ?? false ?
-                    ChannelStateEnum.CS_Automatic_Off :
-                    ChannelStateEnum.CS_AutomaticStarting;
+                    ChannelStateEnum.CS_AutomaticOff :
+                    ChannelStateEnum.CS_AutomaticOn;
 
                 await Program.Motor.ChannelChangeState(_index, state);
             }

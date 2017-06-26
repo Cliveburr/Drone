@@ -11,7 +11,6 @@ struct TimerEventStruct {
     unsigned long value;
     unsigned long missing;
     TimerEventCallback callback;
-    unsigned char enabled;
     unsigned char tag;
 };
 

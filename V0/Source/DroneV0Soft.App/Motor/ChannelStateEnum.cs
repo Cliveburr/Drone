@@ -10,9 +10,7 @@ namespace DroneV0Soft.App.Motor
     {
         CS_ManualOff = 0,
         CS_ManualOn = 1,
-        CS_Automatic_Off = 2,
-        CS_AutomaticStarting = 3,
-        CS_AutomaticRunning = 4,
-        CS_AutomaticStoping = 5
+        CS_AutomaticOff = 2,
+        CS_AutomaticOn = 3
     }
 }

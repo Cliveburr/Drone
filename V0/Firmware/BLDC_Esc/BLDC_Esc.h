@@ -21,14 +21,20 @@ enum ChannelMode {
 enum ChannelState {
     CS_ManualOff = 0,
     CS_ManualOn = 1,
-    CS_Automatic_Off = 2,
-    CS_AutomaticStarting = 3,
-    CS_AutomaticRunning = 4,
-    CS_AutomaticStoping = 5
+    CS_AutomaticOff = 2,
+    CS_AutomaticOn = 3
+};
+
+enum ChannelStepState {
+    CSS_PosCommute = 0,
+    CSS_Stable = 1,
+    CSS_PreCommute = 2
 };
 
 struct ChannelStruct {
     unsigned char step;
+    enum ChannelStepState stepState;
+    unsigned long stepLength;
     unsigned char isFoward;
     unsigned char isOneStep;
     struct TimerEventStruct stepTimer;
@@ -43,22 +49,27 @@ struct ChannelStruct {
     unsigned char isCrossZero;
     unsigned char crossZeroCount;
     struct TimerEventCounter stepLengthCounter;
-    struct TimerEventStruct automaticStartStopTimer;
+    struct TimerEventStruct altSpeedTimer;
+    unsigned int altSpeedCount;
+    float altSpeedValue;
+    unsigned int stepCounting;
 };
 
 unsigned char CrossZeroDef;
 
-unsigned int AutomaticStartStopBegin;
-unsigned int AutomaticStartStopEnd;
+unsigned long AutomaticStartStepLength;
+unsigned int AutomaticStartStepTargetLength;
 unsigned char AutomaticStartStopInc;
 
 struct ChannelStruct BLDC_Esc_Channels[4];
+
+struct TimerEventStruct StepCountingTimer;
 
 void BLDC_Esc_Initialize();
 
 void BLDC_Esc_Task();
 
-void BLDC_Esc_Tick(struct ChannelStruct *channel);
+void BLDC_Esc_Tick(unsigned char index);
 
 void BLDC_Esc_CrossZeroEvent(struct ChannelStruct *channel);
 
@@ -72,7 +83,7 @@ void BLDC_Esc_SetManualConfig(unsigned char index, unsigned char direction, unsi
 
 void BLDC_Esc_SetManualStep(unsigned char index, unsigned long stepTicks);
 
-void BLDC_Esc_SetManualPWM(unsigned char index, unsigned int pwmOnBeforeAdc, unsigned int pwmOnAfterAdc, unsigned int pwmOff);
+void BLDC_Esc_SetPWM(unsigned char index, unsigned int pwmOnBeforeAdc, unsigned int pwmOnAfterAdc, unsigned int pwmOff);
 
 void BLDC_Esc_SetAutomatic(unsigned char index);
 
@@ -80,8 +91,12 @@ void BLDC_Esc_SetAutomaticOn(unsigned char index);
 
 void BLDC_Esc_SetAutomaticOff(unsigned char index);
 
-void BLDC_Esc_SetAutomaticStartStop(unsigned char tag);
+void BLDC_Esc_AltSpeed(unsigned char tag);
 
-void BLDC_Esc_ConfigStartStopCurve(unsigned int beginValue, unsigned int endValue, unsigned char incValue, unsigned int clockValue);
+void BLDC_Esc_ConfigStartStopCurve(unsigned long beginValue, unsigned int endValue, unsigned char incValue, unsigned int clockValue);
+
+void BLDC_Esc_SetAltSpeed(unsigned char index, unsigned int speedCount, float speedValue);
+
+void BLDC_Esc_StepCounting();
 
 #endif	/* BLDC_ESC */

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DroneV0Soft.App.Motor.Message
 {
-    public class ChannelManualPWM : IMessageRequest
+    public class ChannelPWM : IMessageRequest
     {
         public int Index { get; set; }
         public ushort PwmOnBeforeAdc { get; set; }
@@ -19,7 +19,7 @@ namespace DroneV0Soft.App.Motor.Message
             using (var mem = new MemoryStream())
             using (var binary = new BinaryWriter(mem))
             {
-                binary.Write((byte)MessageIndexEnum.ChannelManualPWM);
+                binary.Write((byte)MessageIndexEnum.ChannelPWM);
 
                 binary.Write((byte)Index);
 

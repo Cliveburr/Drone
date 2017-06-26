@@ -7,6 +7,11 @@
 void BLDC_Esc_WHL_Step(unsigned char tag) {
     struct ChannelStruct* channel = &BLDC_Esc_Channels[tag];
     
+    if (channel->mode == CM_Automatic && channel->stepState == CSS_PosCommute) {
+        channel->stepState = CSS_Stable;
+        return;
+    }
+    
     BLDC_Esc_WHL_Set_Value(tag, channel->step, 0);
     
     if (channel->isFoward) {
@@ -29,12 +34,12 @@ void BLDC_Esc_WHL_Step(unsigned char tag) {
         }
     }
     else {
-        if (channel->state == CS_AutomaticRunning) {
-            channel->stepTimer.enabled = 0;
-        }
-
+        channel->stepState = CSS_PosCommute;
+        channel->stepTimer.value = channel->stepTimer.missing = channel->stepLength * 0.1;
         BLDC_Esc_CrossZeroPortSelect(tag, channel->step);
     }
+    
+    channel->stepCounting++;
     
     BLDC_Esc_WHL_Set_Value(tag, channel->step, channel->pwmState != 3);
 }

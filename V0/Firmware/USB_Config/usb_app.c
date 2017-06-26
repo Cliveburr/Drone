@@ -120,10 +120,8 @@ void APP_DeviceTasks()
                 switch (state) {
                     case CS_ManualOff: BLDC_Esc_SetManualOff(index); break;
                     case CS_ManualOn: BLDC_Esc_SetManualOn(index); break;
-                    case CS_AutomaticStoping:
-                    case CS_Automatic_Off: BLDC_Esc_SetAutomaticOff(index); break;
-                    case CS_AutomaticStarting:
-                    case CS_AutomaticRunning: BLDC_Esc_SetAutomaticOn(index); break;
+                    case CS_AutomaticOff: BLDC_Esc_SetAutomaticOff(index); break;
+                    case CS_AutomaticOn: BLDC_Esc_SetAutomaticOn(index); break;
                 }
 
                 // generate response
@@ -162,7 +160,7 @@ void APP_DeviceTasks()
                 
                 break;
             }
-            case 6:  // ChannelManualPWM
+            case 6:  // ChannelPWM
             {
                 // parse request
                 unsigned char index = ReceivedDataBuffer[1];
@@ -180,7 +178,7 @@ void APP_DeviceTasks()
                 unsigned int pwmOff = UInt16Convertion.value;
 
                 // process the message
-                BLDC_Esc_SetManualPWM(index, pwmOnBeforeAdc, pwmOnAfterAdc, pwmOff);
+                BLDC_Esc_SetPWM(index, pwmOnBeforeAdc, pwmOnAfterAdc, pwmOff);
                 
                 //union ULongConvertion tick;
                 //tick.bytes[0] = ReceivedDataBuffer[1];
@@ -203,18 +201,20 @@ void APP_DeviceTasks()
             case 7:  // ConfigStartStopCurve
             {
                 // parse request
-                UInt16Convertion.bytes[0] = ReceivedDataBuffer[1];
-                UInt16Convertion.bytes[1] = ReceivedDataBuffer[2];
-                unsigned int beginValue = UInt16Convertion.value;
+                ULong32Convertion.bytes[0] = ReceivedDataBuffer[1];
+                ULong32Convertion.bytes[1] = ReceivedDataBuffer[2];
+                ULong32Convertion.bytes[2] = ReceivedDataBuffer[3];
+                ULong32Convertion.bytes[3] = ReceivedDataBuffer[4];
+                unsigned long beginValue = ULong32Convertion.value;
 
-                UInt16Convertion.bytes[0] = ReceivedDataBuffer[3];
-                UInt16Convertion.bytes[1] = ReceivedDataBuffer[4];
+                UInt16Convertion.bytes[0] = ReceivedDataBuffer[5];
+                UInt16Convertion.bytes[1] = ReceivedDataBuffer[6];
                 unsigned int endValue = UInt16Convertion.value;
                 
-                unsigned char incValue = ReceivedDataBuffer[5];
+                unsigned char incValue = ReceivedDataBuffer[7];
 
-                UInt16Convertion.bytes[0] = ReceivedDataBuffer[6];
-                UInt16Convertion.bytes[1] = ReceivedDataBuffer[7];
+                UInt16Convertion.bytes[0] = ReceivedDataBuffer[8];
+                UInt16Convertion.bytes[1] = ReceivedDataBuffer[9];
                 unsigned int clockValue = UInt16Convertion.value;
 
                 // process the message
@@ -224,24 +224,23 @@ void APP_DeviceTasks()
             }
             case 8:  // Channel0 one step
             {
-                //Channel0.isOneStep = Channel0.isRunning = 1;
+                
+                BLDC_Esc_SetAltSpeed(0, 10, 0.99);
+                
                 break;
             }
-            case 10:   // Change the LedControl channel 0
+            case 9: // ChannelStepCounting
             {
-                //RED0on = ReceivedDataBuffer[1];
-                //RED0on = ReceivedDataBuffer[2] << 8;
-                //RED0off = ReceivedDataBuffer[3];
-                //RED0off = ReceivedDataBuffer[4] << 8;
-                //GREEN0on = ReceivedDataBuffer[5];
-                //GREEN0on = ReceivedDataBuffer[6] << 8;
-                //GREEN0off = ReceivedDataBuffer[7];
-                //GREEN0off = ReceivedDataBuffer[8] << 8;
-                //BLUE0on = ReceivedDataBuffer[9];
-                //BLUE0on = ReceivedDataBuffer[10] << 8;
-                //BLUE0off = ReceivedDataBuffer[11];
-                //BLUE0off = ReceivedDataBuffer[12] << 8;
-                //LedControl_Init();
+                // parse request
+                unsigned char index = ReceivedDataBuffer[1];
+
+                // generate response
+                UInt16Convertion.value = BLDC_Esc_Channels[index].stepCounting;
+                ToSendDataBuffer[0] = UInt16Convertion.bytes[0];
+                ToSendDataBuffer[1] = UInt16Convertion.bytes[1];
+                
+                USBInHandle = HIDTxPacket(CUSTOM_DEVICE_HID_EP, (uint8_t*)&ToSendDataBuffer[0], 64);
+
                 break;
             }
             //case COMMAND_TOGGLE_LED:  //Toggle LEDs command

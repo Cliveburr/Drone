@@ -107,10 +107,10 @@ namespace DroneV0Soft.App.Windows
         {
             try
             {
-                var beginValue = ushort.Parse(tbSTCbeginvalue.Text);
-                var endValue = ushort.Parse(tbSTCendvalue.Text);
-                var incValue = byte.Parse(tbSTCincvalue.Text);
-                var clockValue = ushort.Parse(tbSTCclockvalue.Text);
+                var beginValue = (uint)float.Parse(tbSTCbeginvalue.Text);
+                var endValue = (ushort)float.Parse(tbSTCendvalue.Text);
+                var incValue = (byte)float.Parse(tbSTCincvalue.Text);
+                var clockValue = (ushort)float.Parse(tbSTCclockvalue.Text);
 
                 await Program.Motor.ConfigStartStopCurve(beginValue, endValue, incValue, clockValue);
             }

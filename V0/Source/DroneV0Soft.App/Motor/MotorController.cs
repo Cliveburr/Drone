@@ -52,16 +52,8 @@ namespace DroneV0Soft.App.Motor
 
             var response = await Transport.SendMessageWithResonse<ChannelChangeStateResponse>(request);
 
-            if (state == ChannelStateEnum.CS_Automatic_Off || state == ChannelStateEnum.CS_AutomaticStoping)
-            {
-                if (!(response.State == ChannelStateEnum.CS_Automatic_Off || response.State == ChannelStateEnum.CS_AutomaticStoping))
-                    throw new Exception("ChannelChangeState fail!");
-            }
-            else
-            {
-                if (response.State != state)
-                    throw new Exception("ChannelChangeState fail!");
-            }
+            if (response.State != state)
+                throw new Exception("ChannelChangeState fail!");
         }
 
         public async Task ChannelManualConfig(int index, byte direction, byte oneStep)
@@ -89,7 +81,7 @@ namespace DroneV0Soft.App.Motor
 
         public async Task ChannelManualPWM(int index, ushort pwmOnBeforeAdc, ushort pwmOnAfterAdc, ushort pwmOff)
         {
-            var request = new ChannelManualPWM
+            var request = new ChannelPWM
             {
                 Index = index,
                 PwmOnBeforeAdc = pwmOnBeforeAdc,
@@ -100,7 +92,7 @@ namespace DroneV0Soft.App.Motor
             await Transport.SendMessage(request);
         }
 
-        public async Task ConfigStartStopCurve(ushort beginValue, ushort endValue, byte incValue, ushort clockValue)
+        public async Task ConfigStartStopCurve(uint beginValue, ushort endValue, byte incValue, ushort clockValue)
         {
             var request = new ConfigStartStopCurve
             {

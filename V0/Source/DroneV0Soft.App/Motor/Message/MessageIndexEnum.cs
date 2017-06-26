@@ -13,7 +13,8 @@ namespace DroneV0Soft.App.Motor.Message
         ChannelChangeState = 3,
         ChannelManualConfig = 4,
         ChannelManualStep = 5,
-        ChannelManualPWM = 6,
-        ConfigStartStopCurve = 7
+        ChannelPWM = 6,
+        ConfigStartStopCurve = 7,
+        ChannelStepCounting = 9
     }
 }

@@ -9,7 +9,7 @@ namespace DroneV0Soft.App.Motor.Message
 {
     public class ConfigStartStopCurve : IMessageRequest
     {
-        public ushort BeginValue { get; set; }
+        public uint BeginValue { get; set; }
         public ushort EndValue { get; set; }
         public byte IncValue { get; set; }
         public ushort ClockValue { get; set; }
