@@ -4,6 +4,7 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/F:/Git/Drone/V0/Firmware/BLDC_Esc/BLDC_Esc.c</file>
+            <file>file:/F:/Git/Drone/V0/Firmware/BLDC_Esc/Timer_Events.c</file>
             <file>file:/F:/Git/Drone/V0/Firmware/system.c</file>
             <file>file:/F:/Git/Drone/V0/Firmware/main.c</file>
             <file>file:/F:/Git/Drone/V0/Firmware/USB_Config/usb_app.c</file>

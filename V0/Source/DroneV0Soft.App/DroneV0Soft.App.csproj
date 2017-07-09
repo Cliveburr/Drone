@@ -61,6 +61,7 @@
     <Compile Include="Motor\Message\ChannelManualConfig.cs" />
     <Compile Include="Motor\Message\ChannelPWM.cs" />
     <Compile Include="Motor\Message\ChannelManualStep.cs" />
+    <Compile Include="Motor\Message\ChannelStepCounting.cs" />
     <Compile Include="Motor\Message\ConfigStartStopCurve.cs" />
     <Compile Include="Motor\Message\IMessageResponse.cs" />
     <Compile Include="Motor\Message\IMessageRequest.cs" />

@@ -31,9 +31,16 @@ enum ChannelStepState {
     CSS_PreCommute = 2
 };
 
+enum ChannelAutomaticState {
+    CAS_Starting = 0,
+    CAS_Running = 1,
+    CAS_Stopping = 2
+};
+
 struct ChannelStruct {
     unsigned char step;
     enum ChannelStepState stepState;
+    enum ChannelAutomaticState automaticState;
     unsigned long stepLength;
     unsigned char isFoward;
     unsigned char isOneStep;
@@ -53,6 +60,7 @@ struct ChannelStruct {
     unsigned int altSpeedCount;
     float altSpeedValue;
     unsigned int stepCounting;
+    unsigned int stepCountingVar;
 };
 
 unsigned char CrossZeroDef;

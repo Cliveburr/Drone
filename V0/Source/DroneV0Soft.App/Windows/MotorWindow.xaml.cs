@@ -27,7 +27,7 @@ namespace DroneV0Soft.App.Windows
         const double timer_value = 0.00000008333333333;
 
         private int _index;
-        private Timer _timer;
+        private Timer _stepCoutingtimer;
         private ProbeWindow _probeWindow;
         private bool _afterIni = false;
 
@@ -43,11 +43,9 @@ namespace DroneV0Soft.App.Windows
 
             GetChannelInfo(true);
 
-            //_timer = new Timer();
-            //_timer.Elapsed += _timer_Elapsed;
-            //_timer.Interval = 100;
-            //_timer.Start();
-
+            _stepCoutingtimer = new Timer();
+            _stepCoutingtimer.Elapsed += _stepCoutingtimer_Elapsed;
+            _stepCoutingtimer.Interval = 200;
 
             //_probe = new ProbeProps
             //{
@@ -486,6 +484,81 @@ namespace DroneV0Soft.App.Windows
                 Program.ErrorHandler(err);
             }
             //SetManualGroups(true);
+        }
+
+        private void tbCoutingRPM_Click(object sender, RoutedEventArgs e)
+        {
+            if (tabControl.SelectedIndex == 0)
+            {
+                if (tbManualCoutingRPM.IsChecked ?? false)
+                {
+                    _stepCoutingtimer.Start();
+                }
+            }
+            else
+            {
+                if (tbAutoCoutingRPM.IsChecked ?? false)
+                {
+                    _stepCoutingtimer.Start();
+                }
+            }
+        }
+
+        private void _stepCoutingtimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            Dispatcher.Invoke(_stepCoutingtimer_Safe);
+        }
+
+        private async void _stepCoutingtimer_Safe()
+        {
+            _stepCoutingtimer.Stop();
+
+            var isManualTab = tabControl.SelectedIndex == 0;
+            var coutingRPMChecked = isManualTab ?
+                tbManualCoutingRPM.IsChecked ?? false :
+                tbAutoCoutingRPM.IsChecked ?? false;
+
+            if (coutingRPMChecked)
+            {
+                try
+                {
+                    var response = await Program.Motor.ChannelStepCounting(_index);
+
+                    var totalStep = response.StepCounting * 5 * 60;
+
+                    var steps = int.Parse(tbManualSteps.Text);  //TODO: change this config
+
+                    totalStep = totalStep / steps;
+
+                    if (isManualTab)
+                    {
+                        lbManualCoutingRPM.Content = totalStep.ToString();
+                    }
+                    else
+                    {
+                        lbAutoCoutingRPM.Content = totalStep.ToString();
+                    }
+                }
+                catch (Exception err)
+                {
+                    tbManualCoutingRPM.IsChecked = false;
+                    tbAutoCoutingRPM.IsChecked = false;
+
+                    Program.ErrorHandler(err);
+                }
+
+                tbCoutingRPM_Click(null, null);
+            }
+        }
+
+        private void btAutoSend_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void fcAutoPWM_OnValidationEvent(MetricLibrary.Frequency value)
+        {
+
         }
     }
 }

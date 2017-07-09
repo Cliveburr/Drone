@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace DroneV0Soft.App.Motor
 {
@@ -52,8 +53,8 @@ namespace DroneV0Soft.App.Motor
 
             var response = await Transport.SendMessageWithResonse<ChannelChangeStateResponse>(request);
 
-            if (response.State != state)
-                throw new Exception("ChannelChangeState fail!");
+            //if (response.State != state)
+            //    throw new Exception("ChannelChangeState fail!");
         }
 
         public async Task ChannelManualConfig(int index, byte direction, byte oneStep)
@@ -103,6 +104,18 @@ namespace DroneV0Soft.App.Motor
             };
 
             await Transport.SendMessage(request);
+        }
+
+        public async Task<ChannelStepCountingResponse> ChannelStepCounting(int index)
+        {
+            var request = new ChannelStepCountingRequest
+            {
+                Index = index
+            };
+
+            var response = await Transport.SendMessageWithResonse<ChannelStepCountingResponse>(request);
+
+            return response;
         }
     }
 }

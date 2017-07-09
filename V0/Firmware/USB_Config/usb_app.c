@@ -235,7 +235,7 @@ void APP_DeviceTasks()
                 unsigned char index = ReceivedDataBuffer[1];
 
                 // generate response
-                UInt16Convertion.value = BLDC_Esc_Channels[index].stepCounting;
+                UInt16Convertion.value = BLDC_Esc_Channels[index].stepCountingVar;
                 ToSendDataBuffer[0] = UInt16Convertion.bytes[0];
                 ToSendDataBuffer[1] = UInt16Convertion.bytes[1];
                 

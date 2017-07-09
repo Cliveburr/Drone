@@ -35,7 +35,31 @@ void BLDC_Esc_WHL_Step(unsigned char tag) {
     }
     else {
         channel->stepState = CSS_PosCommute;
-        channel->stepTimer.value = channel->stepTimer.missing = channel->stepLength * 0.1;
+        channel->stepTimer.value = channel->stepTimer.missing = channel->stepLength * 0.05;
+
+        switch (channel->automaticState) {
+            case CAS_Starting:
+            {
+                if (channel->stepLength < AutomaticStartStepTargetLength) {
+                    channel->automaticState = CAS_Running;
+                }
+                break;
+            }
+            case CAS_Running:
+            {
+                channel->stepLength = channel->stepLengthCounter.value;
+                break;
+            }
+            case CAS_Stopping:
+            {
+                if (channel->stepLength > AutomaticStartStepLength) {
+                    channel->state = CS_AutomaticOff;
+                }
+                break;
+            }
+        }
+            
+        channel->stepLengthCounter.value = 0;
         BLDC_Esc_CrossZeroPortSelect(tag, channel->step);
     }
     

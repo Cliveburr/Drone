@@ -111,11 +111,11 @@ void SYSTEM_Initialize()
     // bit 7    - Comparator 2 Output bit (1 = C2 VIN+ > C2 VIN-)
     CMCON = 0b00110110;
     
-    // bit 0-3  - Comparator VREF Value Selection bits
-    // bit 4    - Comparator VREF Source Selection bit
-    // bit 5    - Comparator VREF Range Selection bit
-    // bit 6    - Comparator VREF Output Enable bit
-    // bit 7    - Comparator Voltage Reference Enable bit
+    // bit 0-3  - CVR3:CVR0 Comparator VREF Value Selection bits
+    // bit 4    - CVRSS Comparator VREF Source Selection bit
+    // bit 5    - CVRR Comparator VREF Range Selection bit
+    // bit 6    - CVROE Comparator VREF Output Enable bit
+    // bit 7    - CVREN Comparator Voltage Reference Enable bit
     CVRCON = 0b10100101;
     
     

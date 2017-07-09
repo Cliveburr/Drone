@@ -5,6 +5,8 @@
 #include "BLDC_Esc.h"
 #include "BLDC_Esc_WorkHighLow.h"
 
+#include "system.h"
+
 void BLDC_Esc_Initialize() {
     //test1.Value = 46875;
     //test1.Missing = test1.Value = 6000004; //144000;
@@ -17,7 +19,7 @@ void BLDC_Esc_Initialize() {
     
     AutomaticStartStepLength = 333333;
     AutomaticStartStepTargetLength = 15384;
-    //AutomaticStartStopInc = 20;
+    AutomaticStartStopInc = 15;
 
     StepCountingTimer.callback = BLDC_Esc_StepCounting;
     StepCountingTimer.value = 2400000;
@@ -83,38 +85,47 @@ void BLDC_Esc_Tick(unsigned char index) {
 }
 
 void BLDC_Esc_CrossZeroEvent(struct ChannelStruct *channel) {
-    unsigned char doPreCommute = 0;
+    //unsigned char doPreCommute = 0;
     
-    if (channel->pwmState == 2) {
+    if (channel->pwmState == 2 && channel->automaticState == CAS_Running) {
         unsigned char crosszero = BLDC_Esc_CrossZeroDetect(channel->stepTimer.tag, channel->step);
 
         if (crosszero != channel->isCrossZero) {
-            channel->crossZeroCount--;
-            if (channel->crossZeroCount == 0) {
-                channel->crossZeroCount = CrossZeroDef;
+            POWERON ^= 1;
+            //channel->crossZeroCount--;
+            //if (channel->crossZeroCount == 0) {
+                //channel->crossZeroCount = CrossZeroDef;
                 channel->isCrossZero = crosszero;
 
-                channel->stepLength = channel->stepLengthCounter.value;
+                //channel->stepLength = channel->stepLengthCounter.value;
 
-                doPreCommute = 1;
-            }
+                //doPreCommute = 1;
+                unsigned long stepLength = channel->stepLength / 2;
+                channel->stepTimer.missing = channel->stepTimer.value = stepLength;
+                channel->stepState = CSS_PreCommute;
+                
+            //}
         }
         else {
             channel->crossZeroCount = CrossZeroDef;
         }
     }
     
-    if (!doPreCommute && channel->stepLengthCounter.value > channel->stepLength) {
-        doPreCommute = 1;
-    }
+    //if (!doPreCommute && channel->stepLengthCounter.value > channel->stepLength) {
     
-    if (doPreCommute) {
-        channel->stepLengthCounter.value = 0;
-
-        unsigned long stepLength = channel->stepLength / 2;
-        channel->stepTimer.missing = channel->stepTimer.value = stepLength;
+    if (channel->stepLengthCounter.value > channel->stepLength) {
+        //doPreCommute = 1;
+        channel->stepTimer.missing = 0;
         channel->stepState = CSS_PreCommute;
     }
+    
+    //if (doPreCommute) {
+        //channel->stepLengthCounter.value = 0;
+
+    //    unsigned long stepLength = channel->stepLength / 2;
+    //    channel->stepTimer.missing = channel->stepTimer.value = stepLength;
+    //    channel->stepState = CSS_PreCommute;
+    //}
 }
 
 void BLDC_Esc_SetManual(unsigned char index) {
@@ -196,6 +207,7 @@ void BLDC_Esc_SetAutomaticOn(unsigned char index) {
     if (channel->mode == CM_Automatic && channel->state == CS_AutomaticOff) {
         channel->stepState = CSS_Stable;
         channel->stepLength = AutomaticStartStepLength;
+        channel->automaticState = CAS_Starting;
         //channel->altSpeedState = CSpeed_Inc;
         //channel->altSpeedCount = AutomaticStartSpeedCount;
         //channel->altSpeedValue = AutomaticStartSpeedValue;
@@ -209,7 +221,6 @@ void BLDC_Esc_SetAutomaticOn(unsigned char index) {
     }
 }
 
-
 void BLDC_Esc_SetAutomaticOff(unsigned char index) {
     struct ChannelStruct* channel = &BLDC_Esc_Channels[index];
 
@@ -217,29 +228,65 @@ void BLDC_Esc_SetAutomaticOff(unsigned char index) {
         
         //channel->automaticStartStopTimer.enabled = 1;
         //channel->stepTimer.enabled = 1;
-        channel->state = CS_AutomaticOff;
+        //channel->state = CS_AutomaticOff;
+        channel->automaticState = CAS_Stopping;
+       
     }
 }
 
-const unsigned long easy_value = 1000000000;
+//const unsigned long easy_value = 1000000000;
+const float easy_value = 10000000000;
+const float freq = 0.0000000833333333333333;
+
+float AutomaticStartfreq = 1;
 
 void BLDC_Esc_AltSpeed(unsigned char tag) {
     struct ChannelStruct* channel = &BLDC_Esc_Channels[tag];
+    float tocalc;
     
-    if (channel->stepLength > AutomaticStartStepTargetLength) {
-        float tocalc = easy_value / channel->stepLength;
-        tocalc -= AutomaticStartStopInc;
-        tocalc = easy_value / tocalc;
+    switch (channel->automaticState) {
+        case CAS_Starting:
+        {
+            //AutomaticStartfreq += 0.17;
+            //tocalc = 1 / AutomaticStartfreq;
+            //tocalc /= freq;
+            //channel->stepLength = tocalc / 36;
+            
+            //=ticks-(((RPMtarget-RPMatual)/RPMtarget)*ticks)
+            //unsigned int RPMtarget = AutomaticStartRPM + AutomaticStartStopInc;
+            //channel->stepLength -= (((RPMtarget - AutomaticStartRPM) / RPMtarget) * channel->stepLength);
+            //AutomaticStartRPM = RPMtarget;
+            
+            tocalc = (float)(easy_value / channel->stepLength);
+            tocalc += AutomaticStartStopInc;
+            tocalc = (float)(easy_value / tocalc);
 
-        channel->stepLength = (unsigned long)tocalc;
-    }
-    
-    if (channel->altSpeedCount) {
-        channel->pwmOnBeforeAdc *= channel->altSpeedValue;
-        channel->pwmOnAfterAdc *= channel->altSpeedValue;
-        channel->pwmOff *= channel->altSpeedValue;
+            channel->stepLength = (unsigned long)tocalc;
+            
+            break;
+        }
+        case CAS_Running:
+        {
+            if (channel->altSpeedCount && 0) {
+                channel->pwmOnBeforeAdc *= channel->altSpeedValue;
+                channel->pwmOnAfterAdc *= channel->altSpeedValue;
+                channel->pwmOff *= channel->altSpeedValue;
 
-        channel->altSpeedCount--;
+                channel->altSpeedCount--;
+            }
+
+            break;
+        }
+        case CAS_Stopping:
+        {
+            tocalc = easy_value / channel->stepLength;
+            tocalc -= AutomaticStartStopInc;
+            tocalc = easy_value / tocalc;
+
+            channel->stepLength = (unsigned long)tocalc;
+            
+            break;
+        }
     }
 }
 
@@ -258,5 +305,6 @@ void BLDC_Esc_SetAltSpeed(unsigned char index, unsigned int speedCount, float sp
 }
 
 void BLDC_Esc_StepCounting() {
+    BLDC_Esc_Channels[0].stepCountingVar = BLDC_Esc_Channels[0].stepCounting;
     BLDC_Esc_Channels[0].stepCounting = 0;
 }

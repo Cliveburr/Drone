@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DroneV0Soft.App.Windows"
+        xmlns:ctr="clr-namespace:MetricLibrary.Controls;assembly=MetricLibrary"
         mc:Ignorable="d"
         Title="Motor Controller Channel " Height="687" Width="1102.187">
     <Grid>
@@ -19,10 +20,16 @@
                         </StackPanel>
                         <GroupBox x:Name="grbManualStep" Margin="5" DockPanel.Dock="Top" Header="Step:">
                             <DockPanel Margin="5">
-                                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-                                    <ToggleButton x:Name="tgbManualDirection" Margin="3" Content="Direction" Width="100" Click="tgbManualDirection_Click"></ToggleButton>
-                                    <Button x:Name="btManualOneSte" Margin="3" Content="One Step" Width="100" Click="btManualOneStep_Click"/>
-                                </StackPanel>
+                                <Grid DockPanel.Dock="Top">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                        <ToggleButton x:Name="tgbManualDirection" Margin="3" Content="Direction" Width="100" Click="tgbManualDirection_Click"></ToggleButton>
+                                        <Button x:Name="btManualOneSte" Margin="3" Content="One Step" Width="100" Click="btManualOneStep_Click"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Label x:Name="lbManualCoutingRPM" Margin="3">0</Label>
+                                        <ToggleButton x:Name="tbManualCoutingRPM" Margin="3" Width="100" Click="tbCoutingRPM_Click">Couting RPM</ToggleButton>
+                                    </StackPanel>
+                                </Grid>
                                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
                                     <Label Content="Steps:" />
                                     <TextBox x:Name="tbManualSteps" Margin="3" Width="100" Text="36" KeyDown="tbManualSteps_KeyDown"></TextBox>
@@ -34,7 +41,7 @@
                                 <Slider x:Name="slManualStepRPM" Margin="3" Delay="500" Maximum="1000" Minimum="1" Value="0" ValueChanged="slManualStepRPM_ValueChanged" />
                             </DockPanel>
                         </GroupBox>
-                        <GroupBox x:Name="grbManualPwm" Margin="5" DockPanel.Dock="Top" Header="PWM positive pulse:">
+                        <GroupBox x:Name="grbManualPwm" Margin="5" DockPanel.Dock="Top" Header="PWM:">
                             <StackPanel Margin="5">
                                 <StackPanel Orientation="Horizontal">
                                     <Label Content="PWM Width (Hz):" />
@@ -78,6 +85,30 @@
                         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
                             <ToggleButton x:Name="tgbAutoOnOff" Margin="3" Content="On / Off" Width="100" PreviewMouseLeftButtonDown="tgbAutoOnOff_PreviewMouseLeftButtonDown"></ToggleButton>
                         </StackPanel>
+                        <GroupBox x:Name="grbAutoPWM" Margin="5" DockPanel.Dock="Top" Header="PWM:">
+                            <StackPanel Orientation="Horizontal">
+                                <Label Margin="3">Frequency of PWM:</Label>
+                                <ctr:FrequencyControl x:Name="fcAutoPWM" Margin="3" Width="200" OnValidationEvent="fcAutoPWM_OnValidationEvent"></ctr:FrequencyControl>
+                            </StackPanel>
+                        </GroupBox>
+                        <GroupBox x:Name="grbAutoSpeed" Margin="5" DockPanel.Dock="Top" Header="Speed:">
+                            <StackPanel>
+                                <Grid DockPanel.Dock="Top">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                        <Label x:Name="lbAutoRPM" Margin="5">RPM: 0</Label>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Label x:Name="lbAutoCoutingRPM" Margin="3">0</Label>
+                                        <ToggleButton x:Name="tbAutoCoutingRPM" Margin="3" Width="100" Click="tbCoutingRPM_Click">Couting RPM</ToggleButton>
+                                    </StackPanel>
+                                </Grid>
+                                <Label Margin="5">Torque control:</Label>
+                                <Slider x:Name="slAutoTorque" Margin="5" Minimum="0" Maximum="200" Value="100"></Slider>
+                                <Label Margin="5">Speed change:</Label>
+                                <Slider x:Name="slAutoSpeed" Margin="5" Minimum="0" Maximum="200" Value="100"></Slider>
+                                <Button Margin="5" Click="btAutoSend_Click">Send</Button>
+                            </StackPanel>
+                        </GroupBox>
                     </DockPanel>
                 </Grid>
             </TabItem>
