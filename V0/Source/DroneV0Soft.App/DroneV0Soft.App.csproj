@@ -69,6 +69,7 @@
     <Compile Include="Motor\MotorController.cs" />
     <Compile Include="Motor\Transport\ITransport.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="TimerEventTester.cs" />
     <Compile Include="VirtualMotor.cs" />
     <Compile Include="Windows\ConfigurationWindow.xaml.cs">
       <DependentUpon>ConfigurationWindow.xaml</DependentUpon>

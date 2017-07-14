@@ -22,6 +22,9 @@ namespace DroneV0Soft.App
         [STAThread]
         public static void Main()
         {
+            //var test = new TimerEventTester();
+            //test.TestRotine();
+
             MotorWindow = new MotorWindow[4];
 
             var usbTransport = new UsbTransport();

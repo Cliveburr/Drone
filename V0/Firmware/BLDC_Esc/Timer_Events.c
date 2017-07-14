@@ -5,36 +5,62 @@
 
 #include "Timer_Events.h"
 
-void TimerEvent_Tick() {
-    TimerActualValue = TMR0L;
-    TimerActualValue = (TMR0H << 8) | TimerActualValue;
-    
-    if (TimerActualValue >= TimerLastValue) {
-        TimerDiffValue = TimerActualValue - TimerLastValue;
-        //INTCONbits.TMR0IF = 0;
-    }
-    else {
-        TimerDiffValue = (USHRT_MAX - TimerLastValue) + TimerActualValue;
-    }
-    
-    TimerLastValue = TimerActualValue;
+unsigned short GetActualTimer() {
+    unsigned short actualValue = TMR0L;
+    actualValue = (TMR0H << 8) | actualValue;
+    return actualValue;
 }
 
-void TimerEvent_Check(struct TimerEventStruct *timer) {
-    if (TimerDiffValue >= timer->missing) {
-        timer->missing = timer->value - (TimerDiffValue - timer->missing);
-        timer->callback(timer->tag);
+unsigned short ReadDiffValue(struct TimerEventControl *ctr) {
+    unsigned short diffValue = 0;
+    unsigned short actualValue = GetActualTimer();
+
+    if (actualValue >= ctr->lastValue) {
+        diffValue = actualValue - ctr->lastValue;
     }
     else {
-        timer->missing -= TimerDiffValue;
+        diffValue = (USHRT_MAX - ctr->lastValue) + actualValue;
     }
+
+    ctr->lastValue = actualValue;
+    return diffValue;
 }
 
-void TimerEvent_Counter(struct TimerEventCounter *counter) {
-    if (TimerDiffValue > ULONG_MAX - counter->value) {
+void TimerEventCounter_Tick(struct TimerEventCounter *counter) {
+    unsigned short diffValue = ReadDiffValue(&counter->ctr);
+
+    if (diffValue > ULONG_MAX - counter->value) {
         counter->value = ULONG_MAX;
     }
     else {
-        counter->value += TimerDiffValue;
+        counter->value += diffValue;
     }
+}
+
+void TimerEventCounter_Clear(struct TimerEventCounter *counter) {
+    counter->ctr.lastValue = GetActualTimer();
+    counter->value = 0;
+}
+
+void TimerEventRotine_Tick(struct TimerEventRotine *rotine) {
+    unsigned short diffValue = ReadDiffValue(&rotine->ctr);
+
+    if (diffValue >= rotine->missing) {
+        rotine->missing = rotine->value - (diffValue - rotine->missing);
+        rotine->callback(rotine->tag);
+    }
+    else {
+        rotine->missing -= diffValue;
+    }
+}
+
+void TimerEventRotine_Reset(struct TimerEventRotine *rotine) {
+    rotine->ctr.lastValue = GetActualTimer();
+    rotine->missing = rotine->value;
+}
+
+void TimerEventRotine_Set(struct TimerEventRotine *rotine, unsigned long value) {
+    rotine->ctr.lastValue = GetActualTimer();
+    rotine->value = value;
+    rotine->missing = value;
 }

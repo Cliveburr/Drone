@@ -1,27 +1,34 @@
 #ifndef TIMER_EVENTS_H
 #define	TIMER_EVENTS_H
 
-unsigned short TimerLastValue = 0;
-unsigned short TimerActualValue = 0;
-unsigned short TimerDiffValue = 0;
-
 typedef void (*TimerEventCallback)(unsigned char tag);
 
-struct TimerEventStruct {
+struct TimerEventControl {
+    unsigned short lastValue;
+};
+
+struct TimerEventRotine {
     unsigned long value;
     unsigned long missing;
     TimerEventCallback callback;
     unsigned char tag;
+    struct TimerEventControl ctr;
 };
-
-void TimerEvent_Tick();
-
-void TimerEvent_Check(struct TimerEventStruct *timer);
 
 struct TimerEventCounter {
     unsigned long value;
+    struct TimerEventControl ctr;
 };
 
-void TimerEvent_Counter(struct TimerEventCounter *counter);
+
+void TimerEventCounter_Tick(struct TimerEventCounter *counter);
+
+void TimerEventCounter_Clear(struct TimerEventCounter *counter);
+
+void TimerEventRotine_Tick(struct TimerEventRotine *rotine);
+
+void TimerEventRotine_Reset(struct TimerEventRotine *rotine);
+
+void TimerEventRotine_Set(struct TimerEventRotine *rotine, unsigned long value);
 
 #endif	/* TIMER_EVENTS */

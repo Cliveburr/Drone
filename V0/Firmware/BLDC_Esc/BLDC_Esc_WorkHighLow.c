@@ -34,19 +34,21 @@ void BLDC_Esc_WHL_Step(unsigned char tag) {
         }
     }
     else {
-        channel->stepState = CSS_PosCommute;
-        channel->stepTimer.value = channel->stepTimer.missing = channel->stepLength * 0.05;
-
         switch (channel->automaticState) {
             case CAS_Starting:
             {
                 if (channel->stepLength < AutomaticStartStepTargetLength) {
                     channel->automaticState = CAS_Running;
+                    channel->stepState = CSS_Stable; // CSS_PosCommute;
+                    //channel->stepTimer.value = channel->stepTimer.missing = channel->stepLength * 0.05;
                 }
                 break;
             }
             case CAS_Running:
             {
+                channel->stepState = CSS_Stable; // CSS_PosCommute;
+                //channel->stepTimer.value = channel->stepTimer.missing = channel->stepLength * 0.05;
+                //TimerEvent_Counter2(&channel->stepLengthCounter);
                 channel->stepLength = channel->stepLengthCounter.value;
                 break;
             }
@@ -59,35 +61,35 @@ void BLDC_Esc_WHL_Step(unsigned char tag) {
             }
         }
             
-        channel->stepLengthCounter.value = 0;
+        TimerEventCounter_Clear(&channel->stepLengthCounter);
         BLDC_Esc_CrossZeroPortSelect(tag, channel->step);
     }
     
     channel->stepCounting++;
     
-    BLDC_Esc_WHL_Set_Value(tag, channel->step, channel->pwmState != 3);
+    BLDC_Esc_WHL_Set_Value(tag, channel->step, channel->pwmState != CPWMS_Off);
 }
 
 void BLDC_Esc_WHL_PWM(unsigned char tag) {
     struct ChannelStruct* channel = &BLDC_Esc_Channels[tag];
     
-    channel->pwmState += 1;
-    
     switch (channel->pwmState) {
-        case 1:  // start the pwm high part
+        case CPWMS_Off:
+            channel->pwmState = CPWMS_BeforeAdc;
+            channel->pwmTimer.missing = channel->pwmOnBeforeAdc;
+            //channel->pwmTimer.value = channel->pwmOnAfterAdc;
             BLDC_Esc_WHL_Set_Value(tag, channel->step, 1);
-            //Channel0.pwmTimer.Missing = Channel0.pwmOnBeforeAdc;
-            channel->pwmTimer.value = channel->pwmOnAfterAdc;
             break;
-        case 2:  // position to start the aquisition
-            //Channel0.pwmTimer.Missing = Channel0.pwmOnAfterAdc;
-            channel->pwmTimer.value = channel->pwmOff;
+        case CPWMS_BeforeAdc:
+            channel->pwmState = CPWMS_OnAdc;
+            channel->pwmTimer.missing = channel->pwmOnAdc;
+            //channel->pwmTimer.value = channel->pwmOff;
             break;
-        case 3:  // start the pwm low part
+        case CPWMS_OnAdc:
+            channel->pwmState = CPWMS_Off;
+            channel->pwmTimer.missing = channel->pwmOff;
+            //channel->pwmTimer.value = channel->pwmOnBeforeAdc;
             BLDC_Esc_WHL_Set_Value(tag, channel->step, 0);
-            //Channel0.pwmTimer.Missing = Channel0.pwmOff;
-            channel->pwmTimer.value = channel->pwmOnBeforeAdc;
-            channel->pwmState = 0;
             break;
     }
 }

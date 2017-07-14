@@ -56,7 +56,7 @@ void APP_DeviceTasks()
                 ToSendDataBuffer[6] = UInt16Convertion.bytes[0];
                 ToSendDataBuffer[7] = UInt16Convertion.bytes[1];
 
-                UInt16Convertion.value = channel.pwmOnAfterAdc;
+                UInt16Convertion.value = channel.pwmOnAdc;
                 ToSendDataBuffer[8] = UInt16Convertion.bytes[0];
                 ToSendDataBuffer[9] = UInt16Convertion.bytes[1];
 

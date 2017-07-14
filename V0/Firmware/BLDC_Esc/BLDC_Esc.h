@@ -37,6 +37,12 @@ enum ChannelAutomaticState {
     CAS_Stopping = 2
 };
 
+enum ChannelPWMState {
+    CPWMS_Off = 0,
+    CPWMS_BeforeAdc = 1,
+    CPWMS_OnAdc = 2
+};
+
 struct ChannelStruct {
     unsigned char step;
     enum ChannelStepState stepState;
@@ -44,19 +50,19 @@ struct ChannelStruct {
     unsigned long stepLength;
     unsigned char isFoward;
     unsigned char isOneStep;
-    struct TimerEventStruct stepTimer;
-    unsigned char pwmState;
+    struct TimerEventRotine stepTimer;
+    enum ChannelPWMState pwmState;
     unsigned int pwmOnBeforeAdc;
-    unsigned int pwmOnAfterAdc;
+    unsigned int pwmOnAdc;
     unsigned int pwmOff;
-    struct TimerEventStruct pwmTimer;
+    struct TimerEventRotine pwmTimer;
     //unsigned char adcValues[64];
     enum ChannelMode mode;
     enum ChannelState state;
     unsigned char isCrossZero;
     unsigned char crossZeroCount;
     struct TimerEventCounter stepLengthCounter;
-    struct TimerEventStruct altSpeedTimer;
+    struct TimerEventRotine altSpeedTimer;
     unsigned int altSpeedCount;
     float altSpeedValue;
     unsigned int stepCounting;
@@ -71,7 +77,7 @@ unsigned char AutomaticStartStopInc;
 
 struct ChannelStruct BLDC_Esc_Channels[4];
 
-struct TimerEventStruct StepCountingTimer;
+struct TimerEventRotine StepCountingTimer;
 
 void BLDC_Esc_Initialize();
 
