@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using static DroneV0Soft.App.Motor.Message.TesterMessages;
 
 namespace DroneV0Soft.App
 {
@@ -32,6 +33,12 @@ namespace DroneV0Soft.App
 
             Motor = new MotorController();
             Motor.Transport = usbTransport;
+
+            //var request = new CrossZeroPortSelectRequest
+            //{
+            //    Step = (char)1
+            //};
+            //Program.Motor.Transport.SendMessage(request);
 
             LoadConfigurations();
 

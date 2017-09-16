@@ -66,6 +66,7 @@
     <Compile Include="Motor\Message\IMessageResponse.cs" />
     <Compile Include="Motor\Message\IMessageRequest.cs" />
     <Compile Include="Motor\Message\MessageIndexEnum.cs" />
+    <Compile Include="Motor\Message\TesterMessages.cs" />
     <Compile Include="Motor\MotorController.cs" />
     <Compile Include="Motor\Transport\ITransport.cs" />
     <Compile Include="Program.cs" />

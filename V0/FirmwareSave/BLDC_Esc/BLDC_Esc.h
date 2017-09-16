@@ -2,7 +2,6 @@
 #define	BLDC_ESC_H
 
 #include "Timer_Events.h"
-#include "BLDC_Esc_PWM.h"
 
 union UInt16ConvertionUnion {
    unsigned int value;
@@ -27,9 +26,11 @@ enum ChannelState {
 };
 
 enum ChannelStepState {
-    CSS_PosCommute = 0,
-    CSS_Stable = 1,
-    CSS_PreCommute = 2
+    //CSS_PosCommute = 0,
+    //CSS_Stable = 1,
+    //CSS_PreCommute = 2
+    CSS_CrossZeroDetect = 0,
+    CSS_TimeToCommute = 1
 };
 
 enum ChannelAutomaticState {
@@ -38,15 +39,25 @@ enum ChannelAutomaticState {
     CAS_Stopping = 2
 };
 
+enum ChannelPWMState {
+    CPWMS_Off = 0,
+    CPWMS_BeforeAdc = 1,
+    CPWMS_OnAdc = 2
+};
+
 struct ChannelStruct {
     unsigned char step;
     enum ChannelStepState stepState;
     enum ChannelAutomaticState automaticState;
-    unsigned long stepLength;
+    //unsigned long stepLength;
     unsigned char isFoward;
     unsigned char isOneStep;
     struct TimerEventRotine stepTimer;
-    struct PWM_Struct pwm;
+    enum ChannelPWMState pwmState;
+    unsigned int pwmOnBeforeAdc;
+    unsigned int pwmOnAdc;
+    unsigned int pwmOff;
+    struct TimerEventRotine pwmTimer;
     //unsigned char adcValues[64];
     enum ChannelMode mode;
     enum ChannelState state;
@@ -59,6 +70,8 @@ struct ChannelStruct {
     unsigned int stepCounting;
     unsigned int stepCountingVar;
 };
+
+unsigned char findCross;
 
 unsigned char CrossZeroDef;
 

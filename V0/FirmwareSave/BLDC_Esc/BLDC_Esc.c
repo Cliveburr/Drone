@@ -41,7 +41,9 @@ void BLDC_Esc_Initialize() {
     //Channel0.pwmTimer.Callback = Channel0PWM_cb_hard;
     
     //Channel0.stepTimer.Missing = Channel0.stepTimer.Value = 6000004;
+
 }
+
 
 void BLDC_Esc_Task() {
             //if (Channel0.pwmState == 2 && (Channel0.step == 3 || Channel0.step == 6)) {
@@ -53,6 +55,7 @@ void BLDC_Esc_Task() {
     TimerEventRotine_Tick(&StepCountingTimer);
     
     BLDC_Esc_Tick(0);
+
 }
 
 void BLDC_Esc_Tick(unsigned char index) {
@@ -60,6 +63,10 @@ void BLDC_Esc_Tick(unsigned char index) {
 
     if (channel->mode == CM_Manual) {
         if (channel->state == CS_ManualOn) {
+            TimerEventCounter_Tick(&channel->stepLengthCounter);
+
+            BLDC_Esc_CrossZeroEvent(channel);
+            
             TimerEventRotine_Tick(&channel->stepTimer);
             TimerEventRotine_Tick(&channel->pwmTimer);
         }
@@ -67,6 +74,10 @@ void BLDC_Esc_Tick(unsigned char index) {
     else {
         if (channel->state == CS_AutomaticOn) {
             TimerEventCounter_Tick(&channel->stepLengthCounter);
+
+            if (channel->stepState == CSS_CrossZeroDetect) {
+                BLDC_Esc_CrossZeroEvent(channel);
+            }
 
             switch (channel->automaticState) {
                 case CAS_Starting:
@@ -77,10 +88,7 @@ void BLDC_Esc_Tick(unsigned char index) {
                 }
                 case CAS_Running:
                 {
-                    if (channel->stepState == CSS_Stable) {
-                        BLDC_Esc_CrossZeroEvent(channel);
-                    }
-                    else {
+                    if (channel->stepState == CSS_TimeToCommute) {
                         TimerEventRotine_Tick(&channel->stepTimer);
                     }
                     break;
@@ -100,7 +108,8 @@ void BLDC_Esc_CrossZeroEvent(struct ChannelStruct *channel) {
         unsigned char crosszero = BLDC_Esc_CrossZeroDetect(channel->stepTimer.tag, channel->step);
 
         if (crosszero != channel->isCrossZero) {
-            POWERON ^= 1;
+            //POWERON ^= 1;
+            
             //channel->crossZeroCount--;
             //if (channel->crossZeroCount == 0) {
                 //channel->crossZeroCount = CrossZeroDef;
@@ -109,9 +118,22 @@ void BLDC_Esc_CrossZeroEvent(struct ChannelStruct *channel) {
                 //channel->stepLength = channel->stepLengthCounter.value * 2;
 
                 //doPreCommute = 1;
-                unsigned long stepLength = channel->stepLength / 2;
-                TimerEventRotine_Set(&channel->stepTimer, stepLength);
-                channel->stepState = CSS_PreCommute;
+                if (channel->automaticState == CAS_Running) {
+                    //unsigned long stepLength = channel->stepLength / 2;
+                    //TimerEventRotine_Set(&channel->stepTimer, stepLength);
+                    TimerEventRotine_Set(&channel->stepTimer, channel->stepLengthCounter.value);
+                    channel->stepState = CSS_TimeToCommute;
+                }
+                findCross = 1;
+                
+            //TimerEventCounter_Tick(&channel->stepLengthCounter);
+            //unsigned long bycross = channel->stepLengthCounter.value * 2;
+            //unsigned long valueminor = channel->stepTimer.value * 0.80;
+            //unsigned long valuemajor = channel->stepTimer.value * 1.20;
+            //if (!(valueminor < bycross && bycross < valuemajor)) {
+            //    POWERON = 1;
+           // }
+
             //}
         }
         //else {
@@ -121,11 +143,11 @@ void BLDC_Esc_CrossZeroEvent(struct ChannelStruct *channel) {
     
     //if (!doPreCommute && channel->stepLengthCounter.value > channel->stepLength) {
     
-    //if (channel->stepLengthCounter.value > channel->stepLength) {
+    if (channel->stepLengthCounter.value > channel->stepTimer.value * 2) {
         //doPreCommute = 1;
-    //    channel->stepTimer.missing = 0;
-    //    channel->stepState = CSS_PreCommute;
-    //}
+        channel->stepTimer.missing = 0;
+        channel->stepState = CSS_TimeToCommute;
+    }
     
     //if (doPreCommute) {
         //channel->stepLengthCounter.value = 0;
@@ -215,14 +237,15 @@ void BLDC_Esc_SetAutomaticOn(unsigned char index) {
     struct ChannelStruct* channel = &BLDC_Esc_Channels[index];
 
     if (channel->mode == CM_Automatic && channel->state == CS_AutomaticOff) {
-        channel->stepState = CSS_Stable;
-        channel->stepLength = AutomaticStartStepLength;
+        channel->stepState = CSS_CrossZeroDetect; //CSS_Stable;
+        //channel->stepLength = AutomaticStartStepLength;
         channel->automaticState = CAS_Starting;
         //channel->altSpeedState = CSpeed_Inc;
         //channel->altSpeedCount = AutomaticStartSpeedCount;
         //channel->altSpeedValue = AutomaticStartSpeedValue;
         //channel->stepTimer.missing = channel->stepTimer.value = AutomaticStartStopBegin;
         TimerEventRotine_Set(&channel->stepTimer, AutomaticStartStepLength);
+        TimerEventRotine_Reset(&channel->altSpeedTimer);
 
         channel->pwmState = CPWMS_Off;
         channel->pwmTimer.missing = 0;
@@ -240,12 +263,12 @@ void BLDC_Esc_SetAutomaticOff(unsigned char index) {
         //channel->stepTimer.enabled = 1;
         //channel->state = CS_AutomaticOff;
         channel->automaticState = CAS_Stopping;
-        channel->stepState = CSS_Stable;
+        channel->stepState = CSS_CrossZeroDetect; //CSS_Stable;
     }
 }
 
-//const unsigned long easy_value = 1000000000;
-const float easy_value = 10000000000;
+const unsigned long easy_value = 1000000000;
+//     const float easy_value = 10000000000;
 const float freq = 0.0000000833333333333333;
 
 float AutomaticStartfreq = 1;
@@ -267,11 +290,12 @@ void BLDC_Esc_AltSpeed(unsigned char tag) {
             //channel->stepLength -= (((RPMtarget - AutomaticStartRPM) / RPMtarget) * channel->stepLength);
             //AutomaticStartRPM = RPMtarget;
             
-            tocalc = (float)(easy_value / channel->stepLength);
+            tocalc = (float)(easy_value / channel->stepTimer.value);
             tocalc += AutomaticStartStopInc;
             tocalc = (float)(easy_value / tocalc);
 
-            channel->stepTimer.value = channel->stepLength = (unsigned long)tocalc;
+            channel->stepTimer.value = (unsigned long)tocalc;
+            //channel->stepTimer.value = channel->stepLength = (unsigned long)tocalc;
             
             break;
         }
@@ -289,11 +313,12 @@ void BLDC_Esc_AltSpeed(unsigned char tag) {
         }
         case CAS_Stopping:
         {
-            tocalc = easy_value / channel->stepLength;
+            tocalc = easy_value / channel->stepTimer.value;
             tocalc -= AutomaticStartStopInc;
             tocalc = easy_value / tocalc;
 
-            channel->stepTimer.value = channel->stepLength = (unsigned long)tocalc;
+            channel->stepTimer.value = (unsigned long)tocalc;
+            //channel->stepTimer.value = channel->stepLength = (unsigned long)tocalc;
             
             break;
         }
@@ -317,4 +342,5 @@ void BLDC_Esc_SetAltSpeed(unsigned char index, unsigned int speedCount, float sp
 void BLDC_Esc_StepCounting() {
     BLDC_Esc_Channels[0].stepCountingVar = BLDC_Esc_Channels[0].stepCounting;
     BLDC_Esc_Channels[0].stepCounting = 0;
+    POWERON = 0;
 }

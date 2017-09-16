@@ -7,10 +7,10 @@
 void BLDC_Esc_WHL_Step(unsigned char tag) {
     struct ChannelStruct* channel = &BLDC_Esc_Channels[tag];
     
-    if (channel->mode == CM_Automatic && channel->stepState == CSS_PosCommute) {
-        channel->stepState = CSS_Stable;
-        return;
-    }
+    //if (channel->mode == CM_Automatic && channel->stepState == CSS_PosCommute) {
+    //    channel->stepState = CSS_Stable;
+    //    return;
+    //}
     
     BLDC_Esc_WHL_Set_Value(tag, channel->step, 0);
     
@@ -37,38 +37,82 @@ void BLDC_Esc_WHL_Step(unsigned char tag) {
         switch (channel->automaticState) {
             case CAS_Starting:
             {
-                if (channel->stepLength < AutomaticStartStepTargetLength) {
+                //if (channel->stepLength < AutomaticStartStepTargetLength) {
+                if (channel->stepTimer.value < AutomaticStartStepTargetLength) {
                     channel->automaticState = CAS_Running;
-                    channel->stepState = CSS_Stable; // CSS_PosCommute;
+                    channel->stepState = CSS_CrossZeroDetect; // CSS_PosCommute;
                     //channel->stepTimer.value = channel->stepTimer.missing = channel->stepLength * 0.05;
+                    channel->stepTimer.value /= 2;
                 }
                 break;
             }
             case CAS_Running:
             {
-                channel->stepState = CSS_Stable; // CSS_PosCommute;
+                channel->stepState = CSS_CrossZeroDetect; // CSS_PosCommute;
                 //channel->stepTimer.value = channel->stepTimer.missing = channel->stepLength * 0.05;
-                //TimerEvent_Counter2(&channel->stepLengthCounter);
-                channel->stepLength = channel->stepLengthCounter.value;
+                //channel->stepLength = channel->stepLengthCounter.value;
                 break;
             }
             case CAS_Stopping:
             {
-                if (channel->stepLength > AutomaticStartStepLength) {
+                //if (channel->stepLength > AutomaticStartStepLength) {
+                if (channel->stepTimer.value > AutomaticStartStepLength) {
                     channel->state = CS_AutomaticOff;
                 }
                 break;
             }
         }
             
-        TimerEventCounter_Clear(&channel->stepLengthCounter);
-        BLDC_Esc_CrossZeroPortSelect(tag, channel->step);
     }
+    
+    if (findCross) {
+        //POWERON = 1;
+    }
+    findCross = 0;
+
+    //90 < 91 < 110
+    TimerEventCounter_Tick(&channel->stepLengthCounter);
+    float bycross = channel->stepLengthCounter.value;
+    float valueminor = channel->stepTimer.value * 0.80;
+    float valuemajor = channel->stepTimer.value * 1.20;
+    if (!(valueminor < bycross && bycross < valuemajor)) {
+        POWERON = 1;
+    }
+    //if (!((channel->stepTimer.value * 0.99) < channel->stepLengthCounter.value < (channel->stepTimer.value * 1.01))) {
+    //    POWERON = 1;
+    //}
+    TimerEventCounter_Clear(&channel->stepLengthCounter);
+
+    BLDC_Esc_CrossZeroPortSelect(tag, channel->step);
     
     channel->stepCounting++;
     
-    channel->pwmState == CPWMS_Off;
+    //channel->pwmState == CPWMS_Off;
     BLDC_Esc_WHL_Set_Value(tag, channel->step, channel->pwmState != CPWMS_Off);
+}
+
+void BLDC_Esc_WHL_PWM(unsigned char tag) {
+    struct ChannelStruct* channel = &BLDC_Esc_Channels[tag];
+    
+    switch (channel->pwmState) {
+        case CPWMS_Off:
+            channel->pwmState = CPWMS_BeforeAdc;
+            channel->pwmTimer.missing = channel->pwmOnBeforeAdc;
+            //channel->pwmTimer.value = channel->pwmOnAfterAdc;
+            BLDC_Esc_WHL_Set_Value(tag, channel->step, 1);
+            break;
+        case CPWMS_BeforeAdc:
+            channel->pwmState = CPWMS_OnAdc;
+            channel->pwmTimer.missing = channel->pwmOnAdc;
+            //channel->pwmTimer.value = channel->pwmOff;
+            break;
+        case CPWMS_OnAdc:
+            channel->pwmState = CPWMS_Off;
+            channel->pwmTimer.missing = channel->pwmOff;
+            //channel->pwmTimer.value = channel->pwmOnBeforeAdc;
+            BLDC_Esc_WHL_Set_Value(tag, channel->step, 0);
+            break;
+    }
 }
 
 void BLDC_Esc_WHL_Set_Value(unsigned char index, unsigned char step, unsigned char value) {

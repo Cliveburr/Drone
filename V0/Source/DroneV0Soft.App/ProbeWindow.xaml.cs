@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Xml.Serialization;
+using static DroneV0Soft.App.Motor.Message.TesterMessages;
 
 namespace DroneV0Soft.App
 {
@@ -28,6 +29,8 @@ namespace DroneV0Soft.App
         private Random rnd = new Random();
         //private Device _device;
         private DateTime _lastTime;
+
+        private char StepTest = (char)0;
 
         //public ProbeWindow(Device device)
         //{
@@ -44,6 +47,12 @@ namespace DroneV0Soft.App
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            var request = new CrossZeroPortSelectRequest
+            {
+                Step = StepTest
+            };
+            Program.Motor.Transport.SendMessage(request);
+
             var context = DataContext as ProbeContext;
 
             CheckChannelActive();
@@ -134,12 +143,15 @@ namespace DroneV0Soft.App
 
         private async void _activeTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            //_activeTimer.Stop();
+            _activeTimer.Stop();
 
-            //var now = DateTime.Now;
+            var now = DateTime.Now;
 
-            //var msg = new byte[] { 2 };
-            //var read = await _device.WriteAndRead(msg);
+            var request = new CrossZeroDetectRequest
+            {
+                Step = StepTest
+            };
+            var read = await Program.Motor.Transport.SendMessageWithResonse<CrossZeroDetectResponse>(request);
 
             //var lists = new List<ProbePoint>();
             //var count = read[0];
@@ -150,62 +162,62 @@ namespace DroneV0Soft.App
 
             //if (count > 0)
             //{
-            //    var spacebetween = now - _lastTime;
-            //    var spaceforeach = spacebetween.Ticks / count;
+                //var spacebetween = now - _lastTime;
+                //var spaceforeach = spacebetween.Ticks / count;
 
-            //    for (var i = 0; i < count; i++)
-            //    {
-            //        var value = (read[(i * 2) + 2] << 8) | (read[(i * 2) + 1]);
-            //        lists.Add(new ProbePoint(now.AddTicks(i * spaceforeach), (uint)value));
-            //    }
+                //for (var i = 0; i < count; i++)
+                //{
+                //    var value = (read[(i * 2) + 2] << 8) | (read[(i * 2) + 1]);
+                //    lists.Add(new ProbePoint(now.AddTicks(i * spaceforeach), (uint)value));
+                //}
             //}
 
-            //_lastTime = now;
+            _lastTime = now;
 
-            //Dispatcher.Invoke(() =>
-            //{
-            //    var context = DataContext as ProbeContext;
+            Dispatcher.Invoke(() =>
+            {
+                var context = DataContext as ProbeContext;
 
-            //    foreach (var point in lists)
-            //    {
-            //        ProbeAddPointOnChannel(_channels[0], point);
-            //    }
+                //foreach (var point in lists)
+                //{
+                //    ProbeAddPointOnChannel(_channels[0], point);
+                //}
 
-            //    if (false)  // simulation
-            //    {
-            //        Console.WriteLine("hit" + DateTime.Now.ToString());
-            //        for (var i = 0; i < 6; i++)
-            //        {
-            //            if (_channels[i] != null)
-            //            {
-            //                var value = rnd.Next(-30, 30);
+                if (false)  // simulation
+                {
+                    Console.WriteLine("hit" + DateTime.Now.ToString());
+                    for (var i = 0; i < 6; i++)
+                    {
+                        if (_channels[i] != null)
+                        {
+                            var value = rnd.Next(-30, 30);
 
-            //                if (_channels[i].Values.Count > 0)
-            //                {
-            //                    value = ((int)_channels[i].Values.Last().Value) + value;
-            //                }
+                            if (_channels[i].Values.Count > 0)
+                            {
+                                value = ((int)_channels[i].Values.Last().Value) + value;
+                            }
 
-            //                if (value < 0)
-            //                    value = 0;
+                            if (value < 0)
+                                value = 0;
 
-            //                if (value > context.MaxValue)
-            //                    value = (int)context.MaxValue;
+                            if (value > context.MaxValue)
+                                value = (int)context.MaxValue;
 
-            //                var point = new ProbePoint(now, (uint)value);
+                            var point = new ProbePoint(now, (uint)value);
 
-            //                _channels[i].Values.Add(point);
+                            _channels[i].Values.Add(point);
 
-            //                if (_channels[i].View != null)
-            //                {
-            //                    ProbeAddPointOnChannel(_channels[i], point);
-            //                }
-            //            }
-            //        }
-            //    }
+                            if (_channels[i].View != null)
+                            {
+                                ProbeAddPointOnChannel(_channels[i], point);
+                            }
+                        }
+                    }
+                }
 
-            //    if (context.Active)
-            //        _activeTimer?.Start();
-            //});
+                if (context.Active)
+                    _activeTimer?.Start();
+            });
         }
 
         private void AcquistionTimer_KeyDown(object sender, KeyEventArgs e)

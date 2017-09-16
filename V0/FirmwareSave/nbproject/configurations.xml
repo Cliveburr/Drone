@@ -9,7 +9,6 @@
         <itemPath>BLDC_Esc/BLDC_Esc_User.h</itemPath>
         <itemPath>BLDC_Esc/Timer_Events.h</itemPath>
         <itemPath>BLDC_Esc/BLDC_Esc_WorkHighLow.h</itemPath>
-        <itemPath>BLDC_Esc/BLDC_Esc_PWM.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="USB_Config" projectFiles="true">
         <itemPath>USB_Config/fixed_address_memory.h</itemPath>
@@ -40,7 +39,6 @@
         <itemPath>BLDC_Esc/BLDC_Esc.c</itemPath>
         <itemPath>BLDC_Esc/Timer_Events.c</itemPath>
         <itemPath>BLDC_Esc/BLDC_Esc_WorkHighLow.c</itemPath>
-        <itemPath>BLDC_Esc/BLDC_Esc_PWM.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="USB_Config" projectFiles="true">
         <itemPath>USB_Config/usb_descriptors.c</itemPath>
@@ -139,8 +137,8 @@
         <property key="code-model-rom" value=""/>
         <property key="create-html-files" value="false"/>
         <property key="data-model-ram" value=""/>
-        <property key="data-model-size-of-double" value="32"/>
-        <property key="data-model-size-of-float" value="32"/>
+        <property key="data-model-size-of-double" value="24"/>
+        <property key="data-model-size-of-float" value="24"/>
         <property key="display-class-usage" value="false"/>
         <property key="display-hex-usage" value="false"/>
         <property key="display-overall-usage" value="true"/>
