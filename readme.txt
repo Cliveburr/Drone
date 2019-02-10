@@ -9,6 +9,7 @@ Partes de um drone:
 
 - Frame
 - Motor
+- Esc
 - Helices
 - Bateria
 - Controlador
